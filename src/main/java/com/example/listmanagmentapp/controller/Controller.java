@@ -1,15 +1,9 @@
 package com.example.listmanagmentapp.controller;
 
 import com.example.listmanagmentapp.config.DBConnectionConfig;
-import com.example.listmanagmentapp.helpmethods.IdManager;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,7 +11,6 @@ import java.util.Map;
 public class Controller {
 
     private final DBConnectionConfig dbConnectionConfig;
-    private final IdManager idManager = new IdManager();
 
     public Controller(DBConnectionConfig dbConnectionConfig) {
         this.dbConnectionConfig = dbConnectionConfig;
@@ -26,10 +19,10 @@ public class Controller {
     @GetMapping("/odczyt")
     public Map<Integer, String> odczyt() {
         Map<Integer, String> list = new HashMap<>();
-        try(Connection connection = dbConnectionConfig.dbConnection()){
+        try(Connection connection = dbConnectionConfig.dbConnection();
             Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT * FROM DaneJson")){
             statement.setQueryTimeout(10);
-            ResultSet rs = statement.executeQuery("SELECT * FROM DaneJson");
             while(rs.next()){
                 list.put(rs.getInt(1), rs.getString(2));
             }
@@ -40,30 +33,54 @@ public class Controller {
         return list;
     }
 
-    @PostMapping("/dodajj")
-    public void dodajj(String json) {
-        try(Connection connection = dbConnectionConfig.dbConnection()){
+    //TODO: ustawić zabezpieczenia niedopuszczające osób trzecich do dodawania pozycji
+    @PostMapping("/dodaj/{json}")
+    public void dodaj(@PathVariable String json) {
+        try(Connection connection = dbConnectionConfig.dbConnection();
             Statement statement = connection.createStatement();
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO DaneJson (json) VALUES (?)")){
             statement.setQueryTimeout(10);
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO DaneJson (id, json) VALUES (?, ?)");
-            ps.setInt(1, idManager.provideId());
-            ps.setString(2, json);
+            ps.setString(1, json);
             ps.executeUpdate();
         }catch (Exception e){
             System.out.println(e.getMessage());
         }
     }
 
-    @PostMapping("/dodaj")
-    public void dodaj() {
-        try (Connection connection = dbConnectionConfig.dbConnection()){
+    //TODO: ustawić zabezpieczenia przed niechcianym usunięciem plików przez kogoś nieproszonego
+    @DeleteMapping("/usun/{wpis}")
+    public void usun(@PathVariable int wpis){
+        try(Connection connection = dbConnectionConfig.dbConnection();
             Statement statement = connection.createStatement();
+            PreparedStatement ps = connection.prepareStatement("DELETE FROM DaneJson WHERE id = ?")){
             statement.setQueryTimeout(10);
-            statement.executeQuery("INSERT INTO Tabela (id, słowo, imie) VALUES (3, słowo, Damian)");
-        }catch (Exception e){
+            ps.setInt(1, wpis);
+            if(ps.executeUpdate() == 0){
+                System.out.println("Nie znaleziono wpisu");
+            }
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+    }
 
+    //TODO: ustawić zabezpieczenia przed niechcianym usunięciem plików przez kogoś nieproszonego
+    @DeleteMapping("/usun")
+    public void usunwszystko(){
+        try(Connection connection = dbConnectionConfig.dbConnection();
+            Statement statement = connection.createStatement()){
+            statement.setQueryTimeout(10);
+            connection.setAutoCommit(false);
+            try {
+                statement.executeUpdate("DELETE FROM DaneJson");
+                statement.executeUpdate("Delete from sqlite_sequence where name = 'DaneJson'");
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                System.out.println(e.getMessage());
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
 }
