@@ -2,6 +2,7 @@ package com.example.listmanagmentapp.controller;
 
 import com.example.listmanagmentapp.config.DBConnectionConfig;
 import org.springframework.web.bind.annotation.*;
+import tools.jackson.databind.ObjectMapper;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -11,9 +12,11 @@ import java.util.Map;
 public class Controller {
 
     private final DBConnectionConfig dbConnectionConfig;
+    private final ObjectMapper objectMapper;
 
-    public Controller(DBConnectionConfig dbConnectionConfig) {
+    public Controller(DBConnectionConfig dbConnectionConfig, ObjectMapper objectMapper) {
         this.dbConnectionConfig = dbConnectionConfig;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping("/odczyt")
@@ -34,15 +37,15 @@ public class Controller {
     }
 
     //TODO: ustawić zabezpieczenia niedopuszczające osób trzecich do dodawania pozycji
-    @PostMapping("/dodaj/{json}")
-    public void add(@PathVariable String json) {
+    @PostMapping("/dodaj")
+    public void add(@RequestBody String json) {
         try(Connection connection = dbConnectionConfig.dbConnection();
-            Statement statement = connection.createStatement();
             PreparedStatement ps = connection.prepareStatement("INSERT INTO DaneJson (json) VALUES (?)")){
-            statement.setQueryTimeout(10);
+            ps.setQueryTimeout(10);
+            objectMapper.readTree(json);
             ps.setString(1, json);
             ps.executeUpdate();
-        }catch (Exception e){
+        }  catch (Exception e){
             System.out.println(e.getMessage());
         }
     }
@@ -51,9 +54,8 @@ public class Controller {
     @DeleteMapping("/usun/{wpis}")
     public void delete(@PathVariable int wpis){
         try(Connection connection = dbConnectionConfig.dbConnection();
-            Statement statement = connection.createStatement();
             PreparedStatement ps = connection.prepareStatement("DELETE FROM DaneJson WHERE id = ?")){
-            statement.setQueryTimeout(10);
+            ps.setQueryTimeout(10);
             ps.setInt(1, wpis);
             if(ps.executeUpdate() == 0){
                 System.out.println("Nie znaleziono wpisu");
