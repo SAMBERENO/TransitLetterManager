@@ -17,7 +17,7 @@ public class Controller {
     }
 
     @GetMapping("/odczyt")
-    public Map<Integer, String> odczyt() {
+    public Map<Integer, String> read() {
         Map<Integer, String> list = new HashMap<>();
         try(Connection connection = dbConnectionConfig.dbConnection();
             Statement statement = connection.createStatement();
@@ -35,7 +35,7 @@ public class Controller {
 
     //TODO: ustawić zabezpieczenia niedopuszczające osób trzecich do dodawania pozycji
     @PostMapping("/dodaj/{json}")
-    public void dodaj(@PathVariable String json) {
+    public void add(@PathVariable String json) {
         try(Connection connection = dbConnectionConfig.dbConnection();
             Statement statement = connection.createStatement();
             PreparedStatement ps = connection.prepareStatement("INSERT INTO DaneJson (json) VALUES (?)")){
@@ -49,7 +49,7 @@ public class Controller {
 
     //TODO: ustawić zabezpieczenia przed niechcianym usunięciem plików przez kogoś nieproszonego
     @DeleteMapping("/usun/{wpis}")
-    public void usun(@PathVariable int wpis){
+    public void delete(@PathVariable int wpis){
         try(Connection connection = dbConnectionConfig.dbConnection();
             Statement statement = connection.createStatement();
             PreparedStatement ps = connection.prepareStatement("DELETE FROM DaneJson WHERE id = ?")){
@@ -65,7 +65,7 @@ public class Controller {
 
     //TODO: ustawić zabezpieczenia przed niechcianym usunięciem plików przez kogoś nieproszonego
     @DeleteMapping("/usun")
-    public void usunwszystko(){
+    public void deleteAll(){
         try(Connection connection = dbConnectionConfig.dbConnection();
             Statement statement = connection.createStatement()){
             statement.setQueryTimeout(10);
