@@ -69,38 +69,41 @@ public class ListCreatingService {
 
             Sheet sheet = workbook.getSheetAt(0);
 
-            int row = 0;
-            int neededSize = fromDBtoDto().size();
+            List<RecordsJson> recordsJson = fromDBtoDto();
+            int rowInData = 0;
+            int rowInExcel = 16;
+            int neededSize = recordsJson.size();
             int sumaUszczelek = 0;
             int sumaBrakow = 0;
             int sumaNiezgodnosci = 0;
-            String pudla = null;
-            for(int i = 17; i < 30; i++) {
-                if(row >= neededSize){
+            String pudla = "";
+            for(int i = 0; i < 12; i++) {
+                if(rowInData >= neededSize){
                     break;
                 }
-                if(fromDBtoDto().get(row).nrWyrobu().matches(".*//.*")) {
-                    i--;
-                    pudla = new StringBuilder().append(",").append(pudla).toString();
+                if(recordsJson.get(rowInData).nrWyrobu().matches(".*//.*")) {
+                    pudla = "," + pudla;
+                    //TODO: Zabezpieczyć się przed pierwszą linią w excelu z -//- by nie było nulla
                 }
                 else {
+                    rowInExcel++;
                     pudla = "";
                     sumaUszczelek = 0;
                     sumaBrakow = 0;
                     sumaNiezgodnosci = 0;
-                    sheet.getRow(i).getCell(1).setCellValue(fromDBtoDto().get(row).nrWyrobu());
-                    sheet.getRow(i).getCell(2).setCellValue(fromDBtoDto().get(row).nrZlecenia());
+                    sheet.getRow(rowInExcel).getCell(1).setCellValue(recordsJson.get(rowInData).nrWyrobu());
+                    sheet.getRow(rowInExcel).getCell(2).setCellValue(recordsJson.get(rowInData).nrZlecenia());
                 }
-                //TODO: Możliwe że będzie zmniejszyć zakres w StringBuilder().delete(0, 3) na .delete(0, 2)
-                    pudla = new StringBuilder().append(fromDBtoDto().get(row).pudla()).delete(0, 3).append(pudla).toString();
-                    sheet.getRow(i).getCell(3).setCellValue(sumaUszczelek += fromDBtoDto().get(row).sumaUszczelek());
-                    sheet.getRow(i).getCell(4).setCellValue(sumaBrakow += fromDBtoDto().get(row).sumaBrakow());
-                    sheet.getRow(i).getCell(8).setCellValue(sumaNiezgodnosci += fromDBtoDto().get(row).niezgodnosci());
-                    sheet.getRow(i).getCell(7).setCellValue(pudla);
-                    if (fromDBtoDto().get(row).kz()){
-                        sheet.getRow(i).getCell(9).setCellValue("KZ");
+                //TODO: Możliwe że będzie trzeba zmniejszyć zakres w StringBuilder().delete(0, 3) na .delete(0, 2)
+                    pudla = new StringBuilder().append(recordsJson.get(rowInData).pudla()).delete(0, 3).append(pudla).toString();
+                    sheet.getRow(rowInExcel).getCell(3).setCellValue(sumaUszczelek += recordsJson.get(rowInData).sumaUszczelek());
+                    sheet.getRow(rowInExcel).getCell(4).setCellValue(sumaBrakow += recordsJson.get(rowInData).sumaBrakow());
+                    sheet.getRow(rowInExcel).getCell(8).setCellValue(sumaNiezgodnosci += recordsJson.get(rowInData).niezgodnosci());
+                    sheet.getRow(rowInExcel).getCell(7).setCellValue(pudla);
+                    if (recordsJson.get(rowInData).kz()){
+                        sheet.getRow(rowInExcel).getCell(9).setCellValue("KZ");
                     }
-                    row++;
+                    rowInData++;
             }
 
             workbook.write(fout);
@@ -126,21 +129,23 @@ public class ListCreatingService {
 
             Sheet sheet = workbook.getSheetAt(1);
 /*
-            int row = 0;
+            List<RecordsJson> recordsJson = fromDBtoDto();
+            int rowInData = 0;
+            int rowInExcel = 16;
             for(int i = 17; i < 30; i++) {
-                if(row >= fromDBtoDto().size()){
+                if(rowInData >= recordsJson.size()){
                     break;
                 }
-                for(CodesWithValues e : fromDBtoDto().get(row).braki().getMap().values()) {
+                for(CodesWithValues e : recordsJson.get(rowInData).braki().getMap().values()) {
                     if (e.value() != 0) {
                         String damagedResults = new StringBuilder().append(e.value()).append(e.letter()).toString();
-                        sheet.getRow(i).getCell(7).setCellValue(damagedResults);
+                        sheet.getRow(rowInExcel).getCell(7).setCellValue(damagedResults);
                     }
                 }
-                if (fromDBtoDto().get(row).kz()){
-                    sheet.getRow(i).getCell(9).setCellValue("KZ");
+                if (recordsJson.get(rowInData).kz()){
+                    sheet.getRow(rowInExcel).getCell(9).setCellValue("KZ");
                 }
-                row++;
+                rowInData++;
             }
 */
             workbook.write(fout);
