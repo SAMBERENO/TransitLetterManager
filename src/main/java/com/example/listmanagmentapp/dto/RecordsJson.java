@@ -7,7 +7,9 @@ public record RecordsJson(
         String dataOdbioru,
         int sumaUszczelek,
         int sumaBrakow,
-        CategoryDamaged braki
+        int niezgodnosci,
+        boolean kz,
+        CategoryDamage braki
 ) {
 
 }
