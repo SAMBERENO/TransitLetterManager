@@ -11,6 +11,16 @@ import java.util.Map;
 @RestController
 public class Controller {
 
+    /*
+    TODO: Utworzyć po skończeniu warstwy serwisowej:
+        - Pozbyć się powtarzalnego kodu z połączeniami
+        - Ogólna redukcja/optymalizacja kodu
+        - Zamienić void na ResponseEntity
+        - Poprawić obsługę błędów
+        - Kontroler odpowiedzialny za generowanie plików excel
+        - Kontroler do live testowania działania aplikacji(połączeń i stanu)
+     */
+
     private final DBConnectionConfig dbConnectionConfig;
     private final ObjectMapper objectMapper;
 
@@ -31,7 +41,6 @@ public class Controller {
             }
         }catch (Exception e){
             System.out.println(e.getMessage());
-            return null;
         }
         return list;
     }

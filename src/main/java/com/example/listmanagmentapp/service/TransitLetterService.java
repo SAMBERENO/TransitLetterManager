@@ -1,0 +1,83 @@
+package com.example.listmanagmentapp.service;
+
+import com.example.listmanagmentapp.dto.RecordsJson;
+import org.apache.poi.ooxml.POIXMLException;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Service;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.time.LocalDate;
+import java.util.List;
+
+@Service
+public class TransitLetterService {
+
+    private final RecordsFetchService recordsFetchService;
+    private final String inputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektdlaStarego/CzysteArkuszeExcel/";
+    private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektdlaStarego/ExeleDoTestow/";
+    private final LocalDate date = LocalDate.now();
+
+    public TransitLetterService(RecordsFetchService recordsFetchService){
+        this.recordsFetchService = recordsFetchService;
+    }
+
+    public void createTransitLetter(){
+        try(FileInputStream fin = new FileInputStream(inputPath + "FormatkaListu.xlsx");
+            XSSFWorkbook workbook = new XSSFWorkbook(fin);
+            FileOutputStream fout = new FileOutputStream(outputPath + "List " + date + ".xlsx")){
+
+            Sheet sheet = workbook.getSheetAt(0);
+
+            List<RecordsJson> recordsJson = recordsFetchService.fromDBtoDto();
+            int rowInData = 0;
+            int rowInExcel = 16;
+            int sumaUszczelek = 0;
+            int sumaBrakow = 0;
+            int sumaNiezgodnosci = 0;
+            String pudla = "";
+            for(int i = 0; i < 12; i++) {
+                if (rowInData < recordsJson.size()) {
+                if (recordsJson.get(rowInData).nrWyrobu().matches(".*//.*")) {
+                    pudla = "," + pudla;
+                } else {
+                    rowInExcel++;
+                    pudla = "";
+                    sumaUszczelek = 0;
+                    sumaBrakow = 0;
+                    sumaNiezgodnosci = 0;
+                    sheet.getRow(rowInExcel).getCell(1).setCellValue(recordsJson.get(rowInData).nrWyrobu());
+                    sheet.getRow(rowInExcel).getCell(2).setCellValue(recordsJson.get(rowInData).nrZlecenia());
+                }
+                //TODO: Możliwe że będzie trzeba zmniejszyć zakres w StringBuilder().delete(0, 3) na .delete(0, 2)
+                pudla = new StringBuilder().append(recordsJson.get(rowInData).pudla()).delete(0, 3).append(pudla).toString();
+                sheet.getRow(rowInExcel).getCell(3).setCellValue(sumaUszczelek += recordsJson.get(rowInData).sumaUszczelek());
+                sheet.getRow(rowInExcel).getCell(4).setCellValue(sumaBrakow += recordsJson.get(rowInData).sumaBrakow());
+                sheet.getRow(rowInExcel).getCell(8).setCellValue(sumaNiezgodnosci += recordsJson.get(rowInData).niezgodnosci());
+                sheet.getRow(rowInExcel).getCell(7).setCellValue(pudla);
+                if (recordsJson.get(rowInData).kz()) {
+                    sheet.getRow(rowInExcel).getCell(9).setCellValue("KZ");
+                }
+                rowInData++;
+            } else {
+                    break;
+                }
+            }
+
+            workbook.write(fout);
+        } catch (FileNotFoundException e) {
+            System.out.println("Nie znaleziono pliku ListPrzewozowy: " + e.getMessage());
+        } catch (FileAlreadyExistsException e) {
+            System.out.println("Arkusz ListPrzewozowy istnieje: " + e.getMessage());
+        } catch (POIXMLException e) {
+            System.out.println("Plik ListPrzewozowy Excel jest uszkodzony lub pusty: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("ListPrzewozowy IO Blad: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }}

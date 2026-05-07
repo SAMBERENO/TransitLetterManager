@@ -1,7 +1,9 @@
 package com.example.listmanagmentapp;
 
 import com.example.listmanagmentapp.config.DBConnectionConfig;
-import com.example.listmanagmentapp.service.ListCreatingService;
+import com.example.listmanagmentapp.service.ListsCreationOrganizerService;
+import com.example.listmanagmentapp.service.RecordsFetchService;
+import com.example.listmanagmentapp.service.ShortagesLetterService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import tools.jackson.databind.ObjectMapper;
@@ -12,10 +14,9 @@ public class ListManagmentAppApplication {
     public static void main(String[] args) {
         SpringApplication.run(ListManagmentAppApplication.class, args);
 
-        ListCreatingService listCreatingService = new ListCreatingService(new DBConnectionConfig(), new ObjectMapper());
+        ListsCreationOrganizerService listsCreationOrganizerService = new ListsCreationOrganizerService(new DBConnectionConfig(), new ObjectMapper());
+        listsCreationOrganizerService.createLists();
 
-        listCreatingService.createTransitLetter();
-        listCreatingService.createShortagesLetter();
     }
 
 }
