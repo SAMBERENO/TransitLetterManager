@@ -36,7 +36,7 @@ public class TransitLetterService {
             List<RecordsJson> recordsJson = recordsFetchService.fromDBtoDto();
             int rowInData = 0;
             int rowInExcel = 16;
-            int sumaUszczelek = 0;
+            int sumaDobrychUszczelek = 0;
             int sumaBrakow = 0;
             int sumaNiezgodnosci = 0;
             String pudla = "";
@@ -47,15 +47,16 @@ public class TransitLetterService {
                 } else {
                     rowInExcel++;
                     pudla = "";
-                    sumaUszczelek = 0;
+                    sumaDobrychUszczelek = 0;
                     sumaBrakow = 0;
                     sumaNiezgodnosci = 0;
                     sheet.getRow(rowInExcel).getCell(1).setCellValue(recordsJson.get(rowInData).nrWyrobu());
                     sheet.getRow(rowInExcel).getCell(2).setCellValue(recordsJson.get(rowInData).nrZlecenia());
                 }
                 //TODO: Możliwe że będzie trzeba zmniejszyć zakres w StringBuilder().delete(0, 3) na .delete(0, 2)
-                pudla = new StringBuilder().append(recordsJson.get(rowInData).pudla()).delete(0, 3).append(pudla).toString();
-                sheet.getRow(rowInExcel).getCell(3).setCellValue(sumaUszczelek += recordsJson.get(rowInData).sumaUszczelek());
+                //TODO: Rozkminić jak program ma wiedzieć czy numer pudła ma 1 czy 2 cyfry
+                pudla = new StringBuilder().append(recordsJson.get(rowInData).pudla()).delete(0, 2).append(pudla).toString();
+                sheet.getRow(rowInExcel).getCell(3).setCellValue(sumaDobrychUszczelek += recordsJson.get(rowInData).sumaUszczelek() - recordsJson.get(rowInData).sumaBrakow());
                 sheet.getRow(rowInExcel).getCell(4).setCellValue(sumaBrakow += recordsJson.get(rowInData).sumaBrakow());
                 sheet.getRow(rowInExcel).getCell(8).setCellValue(sumaNiezgodnosci += recordsJson.get(rowInData).niezgodnosci());
                 sheet.getRow(rowInExcel).getCell(7).setCellValue(pudla);
@@ -67,7 +68,7 @@ public class TransitLetterService {
                     break;
                 }
             }
-
+            workbook.setForceFormulaRecalculation(true);
             workbook.write(fout);
         } catch (FileNotFoundException e) {
             System.out.println("Nie znaleziono pliku ListPrzewozowy: " + e.getMessage());

@@ -23,6 +23,6 @@ public class ListsCreationOrganizerService {
 
     public void createLists(){
         transitLetterService.createTransitLetter();
-        shortagesLetterService.createShortagesLetter();
+        shortagesLetterService.builtLetter();
     }
 }
