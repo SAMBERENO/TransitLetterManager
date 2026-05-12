@@ -13,7 +13,6 @@ public class Controller {
 
     /*
     TODO: Utworzyć po skończeniu warstwy serwisowej:
-        - Pozbyć się powtarzalnego kodu z połączeniami
         - Ogólna redukcja/optymalizacja kodu
         - Zamienić void na ResponseEntity
         - Poprawić obsługę błędów
@@ -45,8 +44,10 @@ public class Controller {
         return list;
     }
 
+    //TODO: Dodać metodę dodającą zdjęcia
+
     //TODO: ustawić zabezpieczenia niedopuszczające osób trzecich do dodawania pozycji
-    @PostMapping("/dodaj")
+    @PostMapping("/dodajJson")
     public void add(@RequestBody String json) {
         try(Connection connection = dbConnectionConfig.dbConnection();
             PreparedStatement ps = connection.prepareStatement("INSERT INTO DaneJson (json) VALUES (?)")){
