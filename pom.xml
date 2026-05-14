@@ -11,8 +11,8 @@
     <groupId>com.example</groupId>
     <artifactId>ListManagementApp</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>ListManagmentApp</name>
-    <description>ListManagmentApp</description>
+    <name>ListManagementApp</name>
+    <description>ListManagementApp</description>
     <url/>
     <licenses>
         <license/>
@@ -29,6 +29,7 @@
     <properties>
         <java.version>25</java.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -50,6 +51,7 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>

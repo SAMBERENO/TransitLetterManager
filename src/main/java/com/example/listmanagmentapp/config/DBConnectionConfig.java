@@ -11,7 +11,9 @@ public class DBConnectionConfig {
 
     public DBConnectionConfig() {}
 
+    private final String url = "jdbc:sqlite:C:/Softs/ProjektDlaStarego/ListManagmentApp/src/main/resources/JsonBuffer";
+
     public Connection dbConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:sqlite:C:/Softs/ProjektDlaStarego/ListManagmentApp/src/main/resources/JsonBuffer");
+        return DriverManager.getConnection(url);
         }
     }

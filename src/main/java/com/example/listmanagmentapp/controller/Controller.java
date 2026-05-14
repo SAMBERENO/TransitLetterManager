@@ -1,18 +1,25 @@
 package com.example.listmanagmentapp.controller;
 
 import com.example.listmanagmentapp.config.DBConnectionConfig;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.sql.*;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@RequestMapping("/controller")
 @RestController
 public class Controller {
 
     /*
     TODO: Utworzyć po skończeniu warstwy serwisowej:
+        - Usunąć Query z metod
         - Ogólna redukcja/optymalizacja kodu
         - Zamienić void na ResponseEntity
         - Poprawić obsługę błędów
@@ -22,6 +29,7 @@ public class Controller {
 
     private final DBConnectionConfig dbConnectionConfig;
     private final ObjectMapper objectMapper;
+
 
     public Controller(DBConnectionConfig dbConnectionConfig, ObjectMapper objectMapper) {
         this.dbConnectionConfig = dbConnectionConfig;
@@ -43,8 +51,6 @@ public class Controller {
         }
         return list;
     }
-
-    //TODO: Dodać metodę dodającą zdjęcia
 
     //TODO: ustawić zabezpieczenia niedopuszczające osób trzecich do dodawania pozycji
     @PostMapping("/dodajJson")

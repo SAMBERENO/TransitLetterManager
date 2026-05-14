@@ -91,8 +91,6 @@ public class ShortagesLetterService {
                     int excelDamagedCell = 5;
                     rowInExcel+=2;
 
-                    pudla = new StringBuilder().append(recordsJson.get(rowInData).nrZlecenia()).append("$").append(recordsJson.get(rowInData).pudla()).delete(8, 10).toString();
-
                     if (recordsJson.get(rowInData).nrZlecenia().matches(".*//.*")) {
                         pudla = new StringBuilder().append(powtorka).append("$").append(recordsJson.get(rowInData).pudla()).delete(8, 10).toString();
                     } else {
