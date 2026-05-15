@@ -7,8 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.*;
+import java.net.*;
 import java.time.LocalTime;
 import java.util.Base64;
 
@@ -20,6 +22,7 @@ public class AndroidController {
     private MultipartFile image = null;
     private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektdlaStarego/Zdjęcia do skanowania/";
     private final LocalTime time = LocalTime.now();
+    private final String targetUrl = "https://vision.googleapis.com/v1/images:annotate?key=";
 
     private final RestClient restClient;
 
@@ -28,15 +31,36 @@ public class AndroidController {
     }
 
     public BatchAnnotateImagesResponse requestGoogle(){
-
         try(FileInputStream fin = new FileInputStream(ApiKeyPath)){
+            URLConnection urlConnection = serverUri().toURL().openConnection();
+            HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
 
+            httpURLConnection.setRequestMethod("POST");
+            httpURLConnection.setRequestProperty("Content-Type", "application/json");
+
+            httpURLConnection.setDoOutput(true);
+
+            BufferedWriter httpRequestBodyWriter = new BufferedWriter(new OutputStreamWriter(httpURLConnection.getOutputStream()));
+            //TODO: Potwierdzić czy kolejność "features" -> "image" jest poprawna czy na odwrót
+            httpRequestBodyWriter.write("{\"requests\":  " +
+                    "[{ \"features\":  " +
+                    "[{\"type\": \"LABEL_DETECTION\" }], " +
+                    //TODO: poniżej dodać encodedImage
+                    "\"image\": {\"source\": { \"gcsImageUri\":\"gs://vision-sample-images/4_Kittens.jpg\"}}}]}");
+            httpRequestBodyWriter.close();;
+
+            String response = httpURLConnection.getResponseMessage();
+
+            if(httpURLConnection.getInputStream() == null){
+                System.out.println("Brak stream");
+                return null;
+            }
+
+            //TODO: Kontynuować pisanie kodu
+
+            //Te 2 linijki poniżej są na pewno dobrze :3
             byte[] imageBytes = FileUtils.readFileToByteArray(new File(image.getOriginalFilename()));
             String encodedImage = Base64.getEncoder().encodeToString(imageBytes);
-            return restClient
-                    .post()
-                    .uri("https://vision.googleapis.com/v1/images:" + encodedImage + "?" + ApiKeyPath)
-                    .
 
 
         } catch (FileNotFoundException e){
@@ -44,16 +68,21 @@ public class AndroidController {
         } catch (IOException e){
             System.out.println("Blad IO: " + e.getMessage());
         }
-
+        return null;
     }
 
-
-
-    @GetMapping("/getKlucz")
     public String getKlucz(){
         try(FileInputStream fin = new FileInputStream(ApiKeyPath)){
             return new String(fin.readAllBytes());
-        } catch (Exception e) {
+        } catch (IOException e) {
+            return new RuntimeException(e).getMessage();
+        }
+    }
+
+    public URI serverUri(){
+        try{
+            return new URI(targetUrl + getKlucz());
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
