@@ -1,21 +1,29 @@
 package com.example.listmanagmentapp.controller;
 
-import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
+import com.google.cloud.vision.v1.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.*;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLConnection;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 @RequestMapping("/android")
 @RestController
+//TODO: Zmienić nzawę i całą klasę do obsługi Google Vision API
 public class AndroidController {
 
     private final String ApiKeyPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektdlaStarego/APIKlucz.txt";
@@ -30,7 +38,30 @@ public class AndroidController {
         this.restClient = restClient;
     }
 
-    public BatchAnnotateImagesResponse requestGoogle(){
+    public void requestGoogleVision(){
+        try(ImageAnnotatorClient imageAnnotatorClient = ImageAnnotatorClient.create()){
+            BatchAnnotateImagesRequest request = BatchAnnotateImagesRequest.newBuilder()
+                    .addAllRequests(new ArrayList<AnnotateImageRequest>())
+                    .build();
+            BatchAnnotateImagesResponse response = imageAnnotatorClient.batchAnnotateImages(request);
+
+
+
+
+
+            URLConnection urlConnection = serverUri().toURL().openConnection();
+            HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+            //Te 2 linijki poniżej są na pewno dobrze :3
+            byte[] imageBytes = FileUtils.readFileToByteArray(new File(image.getOriginalFilename()));
+            String encodedImage = Base64.getEncoder().encodeToString(imageBytes);
+
+        } catch (IOException e) {
+            System.out.println("Blad IO: " + e.getMessage());
+        }
+
+    }
+
+    public AnnotateImageResponse requestGoogle(){
         try(FileInputStream fin = new FileInputStream(ApiKeyPath)){
             URLConnection urlConnection = serverUri().toURL().openConnection();
             HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
@@ -40,14 +71,16 @@ public class AndroidController {
 
             httpURLConnection.setDoOutput(true);
 
+            //Te 2 linijki poniżej są na pewno dobrze :3
+            byte[] imageBytes = FileUtils.readFileToByteArray(new File(image.getOriginalFilename()));
+            String encodedImage = Base64.getEncoder().encodeToString(imageBytes);
+
             BufferedWriter httpRequestBodyWriter = new BufferedWriter(new OutputStreamWriter(httpURLConnection.getOutputStream()));
-            //TODO: Potwierdzić czy kolejność "features" -> "image" jest poprawna czy na odwrót
             httpRequestBodyWriter.write("{\"requests\":  " +
                     "[{ \"features\":  " +
-                    "[{\"type\": \"LABEL_DETECTION\" }], " +
-                    //TODO: poniżej dodać encodedImage
-                    "\"image\": {\"source\": { \"gcsImageUri\":\"gs://vision-sample-images/4_Kittens.jpg\"}}}]}");
-            httpRequestBodyWriter.close();;
+                    "[{\"type\": \"DOCUMENT_TEXT_DETECTION\" }], " +
+                    "\"image\": {\"content\":\"" + encodedImage +  "\"}}]}");
+            httpRequestBodyWriter.close();
 
             String response = httpURLConnection.getResponseMessage();
 
@@ -58,10 +91,6 @@ public class AndroidController {
 
             //TODO: Kontynuować pisanie kodu
 
-            //Te 2 linijki poniżej są na pewno dobrze :3
-            byte[] imageBytes = FileUtils.readFileToByteArray(new File(image.getOriginalFilename()));
-            String encodedImage = Base64.getEncoder().encodeToString(imageBytes);
-
 
         } catch (FileNotFoundException e){
             System.out.println("Nie znaleziono pliku APIKey.txt " + e.getMessage());
@@ -70,6 +99,8 @@ public class AndroidController {
         }
         return null;
     }
+
+    public
 
     public String getKlucz(){
         try(FileInputStream fin = new FileInputStream(ApiKeyPath)){
