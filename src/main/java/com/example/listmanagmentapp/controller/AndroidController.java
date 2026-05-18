@@ -12,13 +12,11 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLConnection;
+import java.net.*;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Scanner;
 
 @RequestMapping("/android")
 @RestController
@@ -30,38 +28,50 @@ public class AndroidController {
     private final LocalTime time = LocalTime.now();
     private final String targetUrl = "https://vision.googleapis.com/v1/images:annotate?key=";
 
-    private final RestClient restClient;
-
-    public AndroidController(RestClient restClient) {
-        this.restClient = restClient;
-    }
-
-    public void requestGoogleVision(){
-        try(ImageAnnotatorClient imageAnnotatorClient = ImageAnnotatorClient.create()){
-            BatchAnnotateImagesRequest request = BatchAnnotateImagesRequest.newBuilder()
-                    .addAllRequests(new ArrayList<AnnotateImageRequest>())
-                    .build();
-            BatchAnnotateImagesResponse response = imageAnnotatorClient.batchAnnotateImages(request);
-
-
-
-
-
-            URLConnection urlConnection = serverUri().toURL().openConnection();
-            HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
-            //Te 2 linijki poniżej są na pewno dobrze :3
-            byte[] imageBytes = FileUtils.readFileToByteArray(image);
-            String encodedImage = Base64.getEncoder().encodeToString(imageBytes);
-
+    public HttpURLConnection requestGoogleVision(){
+        try{
+            URL serverUrl = new URL(getServerUri().toString());
+            URLConnection urlConnection = serverUrl.openConnection();
+            HttpURLConnection httpURLConnection = (HttpURLConnection)urlConnection;
+            httpURLConnection.setRequestMethod("POST");
+            httpURLConnection.setRequestProperty("Content-Type", "application/json");
+            httpURLConnection.setDoOutput(true);
+            BufferedWriter httpRequestBodyWriter = new BufferedWriter(new OutputStreamWriter(httpURLConnection.getOutputStream()));
+            httpRequestBodyWriter.write("{\"requests\":  " +
+                    "[{ \"features\":  " +
+                    "[{\"type\": \"DOCUMENT_TEXT_DETECTION\" }], " +
+                    "\"image\": {\"content\":\"" + getEncodedImage() +  "\"}}]}");
+            httpRequestBodyWriter.close();
+            return httpURLConnection;
         } catch (IOException e) {
             System.out.println("Blad IO: " + e.getMessage());
         }
+        return null;
+    }
 
+    public String getGoogleVisionResponse(HttpURLConnection httpURLConnection){
+        try{
+            if(httpURLConnection.getInputStream() == null){
+                System.out.println("Brak stream");
+                return null;
+            }
+            Scanner httpResponseBodyScanner = new Scanner(httpURLConnection.getInputStream());
+            String response = "";
+            while (httpResponseBodyScanner.hasNext()){
+                String line = httpResponseBodyScanner.nextLine();
+                response += line;
+            }
+            httpResponseBodyScanner.close();
+            return response;
+        } catch (IOException e) {
+            System.out.println("Blad IO: " + e.getMessage());
+        }
+        return null;
     }
 
     public AnnotateImageResponse requestGoogle(){
         try(FileInputStream fin = new FileInputStream(ApiKeyPath)){
-            URLConnection urlConnection = serverUri().toURL().openConnection();
+            URLConnection urlConnection = getServerUri().openConnection();
             HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
 
             httpURLConnection.setRequestMethod("POST");
@@ -106,17 +116,18 @@ public class AndroidController {
         }
     }
 
-    public URI serverUri(){
+    public URL getServerUri(){
         try {
-            return new URI(targetUrl + getKlucz());
-        } catch (URISyntaxException e) {
+            return new URL(targetUrl + getKlucz());
+        } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
     }
 
     public String getEncodedImage(){
         try {
-            byte[] imageBytes = FileUtils.readFileToByteArray(image);
+            //TODO: Zamienić argument "image" na zmienioną wersję addImage()
+            byte[] imageBytes = FileUtils.readFileToByteArray(new File(outputPath + "lepszfoto.jpg"));
             return Base64.getEncoder().encodeToString(imageBytes);
         } catch (IOException e) {
             return new RuntimeException(e).getMessage();
