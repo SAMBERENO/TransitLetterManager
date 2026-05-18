@@ -1,6 +1,6 @@
 package com.example.listmanagmentapp.controller;
 
-import com.google.cloud.vision.v1.*;
+import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
@@ -17,17 +17,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLConnection;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
 
 @RequestMapping("/android")
 @RestController
-//TODO: Zmienić nzawę i całą klasę do obsługi Google Vision API
 public class AndroidController {
 
     private final String ApiKeyPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektdlaStarego/APIKlucz.txt";
-    private MultipartFile image = null;
+    private File image = null;
     private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektdlaStarego/Zdjęcia do skanowania/";
     private final LocalTime time = LocalTime.now();
     private final String targetUrl = "https://vision.googleapis.com/v1/images:annotate?key=";
@@ -38,30 +35,9 @@ public class AndroidController {
         this.restClient = restClient;
     }
 
-    public void requestGoogleVision(){
-        try(ImageAnnotatorClient imageAnnotatorClient = ImageAnnotatorClient.create()){
-            BatchAnnotateImagesRequest request = BatchAnnotateImagesRequest.newBuilder()
-                    .addAllRequests(new ArrayList<AnnotateImageRequest>())
-                    .build();
-            BatchAnnotateImagesResponse response = imageAnnotatorClient.batchAnnotateImages(request);
 
 
-
-
-
-            URLConnection urlConnection = serverUri().toURL().openConnection();
-            HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
-            //Te 2 linijki poniżej są na pewno dobrze :3
-            byte[] imageBytes = FileUtils.readFileToByteArray(new File(image.getOriginalFilename()));
-            String encodedImage = Base64.getEncoder().encodeToString(imageBytes);
-
-        } catch (IOException e) {
-            System.out.println("Blad IO: " + e.getMessage());
-        }
-
-    }
-
-    public AnnotateImageResponse requestGoogle(){
+    public BatchAnnotateImagesResponse requestGoogle(){
         try(FileInputStream fin = new FileInputStream(ApiKeyPath)){
             URLConnection urlConnection = serverUri().toURL().openConnection();
             HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
@@ -71,16 +47,14 @@ public class AndroidController {
 
             httpURLConnection.setDoOutput(true);
 
-            //Te 2 linijki poniżej są na pewno dobrze :3
-            byte[] imageBytes = FileUtils.readFileToByteArray(new File(image.getOriginalFilename()));
-            String encodedImage = Base64.getEncoder().encodeToString(imageBytes);
-
             BufferedWriter httpRequestBodyWriter = new BufferedWriter(new OutputStreamWriter(httpURLConnection.getOutputStream()));
+            //TODO: Potwierdzić czy kolejność "features" -> "image" jest poprawna czy na odwrót
             httpRequestBodyWriter.write("{\"requests\":  " +
                     "[{ \"features\":  " +
-                    "[{\"type\": \"DOCUMENT_TEXT_DETECTION\" }], " +
-                    "\"image\": {\"content\":\"" + encodedImage +  "\"}}]}");
-            httpRequestBodyWriter.close();
+                    "[{\"type\": \"LABEL_DETECTION\" }], " +
+                    //TODO: poniżej dodać encodedImage
+                    "\"image\": {\"source\": { \"gcsImageUri\":\"gs://vision-sample-images/4_Kittens.jpg\"}}}]}");
+            httpRequestBodyWriter.close();;
 
             String response = httpURLConnection.getResponseMessage();
 
@@ -91,6 +65,10 @@ public class AndroidController {
 
             //TODO: Kontynuować pisanie kodu
 
+            //Te 2 linijki poniżej są na pewno dobrze :3
+            byte[] imageBytes = FileUtils.readFileToByteArray(image);
+            String encodedImage = Base64.getEncoder().encodeToString(imageBytes);
+
 
         } catch (FileNotFoundException e){
             System.out.println("Nie znaleziono pliku APIKey.txt " + e.getMessage());
@@ -99,8 +77,6 @@ public class AndroidController {
         }
         return null;
     }
-
-    public
 
     public String getKlucz(){
         try(FileInputStream fin = new FileInputStream(ApiKeyPath)){
@@ -111,19 +87,32 @@ public class AndroidController {
     }
 
     public URI serverUri(){
-        try{
+        try {
             return new URI(targetUrl + getKlucz());
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
 
+    public String getEncodedImage(){
+        try {
+            byte[] imageBytes = FileUtils.readFileToByteArray(image);
+            return Base64.getEncoder().encodeToString(imageBytes);
+        } catch (IOException e) {
+            return new RuntimeException(e).getMessage();
+        }
+    }
+
+    public String getImagePath(){
+        return outputPath + time + ".jpg";
+    }
+
     @PostMapping("/dodajZdjecie")
     public ResponseEntity addImage(@RequestParam("file") MultipartFile file) {
         try {
-
-            file.transferTo(new File(outputPath + time + ".jpg"));
-            image = file;
+            File imageFile = new File(getImagePath());
+            file.transferTo(imageFile);
+            image = imageFile;
 
             ResponseEntity.ok();
         } catch (FileNotFoundException e) {
