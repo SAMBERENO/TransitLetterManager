@@ -1,6 +1,6 @@
 package com.example.listmanagmentapp.controller;
 
-import com.google.cloud.vision.v1.*;
+import com.google.cloud.vision.v1.AnnotateImageResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
@@ -8,13 +8,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Scanner;
 
@@ -22,9 +23,9 @@ import java.util.Scanner;
 @RestController
 public class AndroidController {
 
-    private final String ApiKeyPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektdlaStarego/APIKlucz.txt";
+    private final String ApiKeyPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakładProd/APIKlucz.txt";
     private File image = null;
-    private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektdlaStarego/Zdjęcia do skanowania/";
+    private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakładProd/Zdjęcia do skanowania/";
     private final LocalTime time = LocalTime.now();
     private final String targetUrl = "https://vision.googleapis.com/v1/images:annotate?key=";
 
@@ -127,7 +128,7 @@ public class AndroidController {
     public String getEncodedImage(){
         try {
             //TODO: Zamienić argument "image" na zmienioną wersję addImage()
-            byte[] imageBytes = FileUtils.readFileToByteArray(new File(outputPath + "lepszfoto.jpg"));
+            byte[] imageBytes = FileUtils.readFileToByteArray(new File(outputPath + "3.jpg"));
             return Base64.getEncoder().encodeToString(imageBytes);
         } catch (IOException e) {
             return new RuntimeException(e).getMessage();

@@ -15,8 +15,8 @@ import java.util.List;
 public class ShortagesLetterService {
 
     private final RecordsFetchService recordsFetchService;
-    private final String inputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektdlaStarego/CzysteArkuszeExcel/";
-    private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektdlaStarego/ExeleDoTestow/";
+    private final String inputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakładProd/CzysteArkuszeExcel/";
+    private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakładProd/ExeleDoTestow/";
     private final LocalDate date = LocalDate.now();
 
     public ShortagesLetterService(RecordsFetchService recordsFetchService){
