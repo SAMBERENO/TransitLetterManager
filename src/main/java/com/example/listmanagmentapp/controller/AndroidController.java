@@ -23,9 +23,9 @@ import java.util.Scanner;
 @RestController
 public class AndroidController {
 
-    private final String ApiKeyPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakładProd/APIKlucz.txt";
+    private final String ApiKeyPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/APIKlucz.txt";
     private File image = null;
-    private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakładProd/Zdjęcia do skanowania/";
+    private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ZdjeciaDoSkanowania/";
     private final LocalTime time = LocalTime.now();
     private final String targetUrl = "https://vision.googleapis.com/v1/images:annotate?key=";
 
@@ -128,7 +128,7 @@ public class AndroidController {
     public String getEncodedImage(){
         try {
             //TODO: Zamienić argument "image" na zmienioną wersję addImage()
-            byte[] imageBytes = FileUtils.readFileToByteArray(new File(outputPath + "3.jpg"));
+            byte[] imageBytes = FileUtils.readFileToByteArray(new File(outputPath + "1.jpg"));
             return Base64.getEncoder().encodeToString(imageBytes);
         } catch (IOException e) {
             return new RuntimeException(e).getMessage();
