@@ -18,8 +18,8 @@ import java.util.List;
 public class TransitLetterService {
 
     private final RecordsFetchService recordsFetchService;
-    private final String inputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakładProd/CzysteArkuszeExcel/";
-    private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakładProd/ExeleDoTestow/";
+    private final String inputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/CzysteArkuszeExcel/";
+    private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ExeleDoTestow/";
     private final LocalDate date = LocalDate.now();
 
     public TransitLetterService(RecordsFetchService recordsFetchService){

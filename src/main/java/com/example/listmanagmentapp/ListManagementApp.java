@@ -1,6 +1,7 @@
 package com.example.listmanagmentapp;
 
 import com.example.listmanagmentapp.controller.AndroidController;
+import com.example.listmanagmentapp.service.ImagePreProcessing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -10,9 +11,13 @@ public class ListManagementApp {
     public static void main(String[] args) {
         SpringApplication.run(ListManagementApp.class, args);
 
-        AndroidController andek = new AndroidController();
+        ImagePreProcessing imagePreProcessing = new ImagePreProcessing();
 
-        System.out.println(andek.getGoogleVisionResponse(andek.requestGoogleVision()));
+        imagePreProcessing.loadImage("C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ZdjeciaDoSkanowania/2.jpg");
+
+        //AndroidController andek = new AndroidController();
+
+        //System.out.println(andek.getGoogleVisionResponse(andek.requestGoogleVision()));
 
         //TODO: Zmienić argument w AndroidController.getEncodedImage() na return of addImage
 
