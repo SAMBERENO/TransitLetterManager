@@ -20,14 +20,22 @@ public class AndroidController {
 
     private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ZdjeciaDoSkanowania/";
     private final LocalTime time = LocalTime.now();
-    private final ImagePreProcessing imagePreProcessing = new ImagePreProcessing();
-    GoogleCloudVisionService gcvs = new GoogleCloudVisionService();
+    private final ImagePreProcessing imagePreProcessing;
+    private final GoogleCloudVisionService gcvs;
+
+    public AndroidController(ImagePreProcessing imagePreProcessing, GoogleCloudVisionService gcvs) {
+        this.imagePreProcessing = imagePreProcessing;
+        this.gcvs = gcvs;
+    }
 
     @PostMapping("/essunia")
     public ResponseEntity<?> essunia(@RequestParam("file") MultipartFile file) {
         try{
             imagePreProcessing.loadImage(addImage(file).getBody());
             gcvs.getGoogleVisionResponse(gcvs.requestGoogleVision());
+
+            //TODO: Dokończyć z odpowiednim zdjęciem
+
             return ResponseEntity.ok("OK");
         } catch (Exception e) {
             throw new RuntimeException(e);

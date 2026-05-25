@@ -14,11 +14,11 @@ public class ListManagementApp {
 
         ImagePreProcessing imagePreProcessing = new ImagePreProcessing();
 
-        imagePreProcessing.loadImage("C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ZdjeciaDoSkanowania/2.jpg");
+        imagePreProcessing.straightenImage("C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ZdjeciaDoSkanowania/2.jpg");
 
-        GoogleCloudVisionService andek = new GoogleCloudVisionService();
+        //GoogleCloudVisionService andek = new GoogleCloudVisionService();
 
-        System.out.println(andek.getGoogleVisionResponse(andek.requestGoogleVision()));
+        //System.out.println(andek.getGoogleVisionResponse(andek.requestGoogleVision()));
 
         //TODO: Zmienić argument w AndroidController.getEncodedImage() na return of addImage
 

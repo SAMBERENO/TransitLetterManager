@@ -19,7 +19,7 @@ public class GoogleCloudVisionService {
     private final String targetUrl = "https://vision.googleapis.com/v1/images:annotate?key=";
     private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ZdjeciaDoSkanowania/";
     private final ImagePreProcessing imagePreProcessing = new ImagePreProcessing();
-    private final AndroidController androidController = new AndroidController();
+    private final AndroidController androidController = new AndroidController(imagePreProcessing, this);
 
     public HttpURLConnection requestGoogleVision(){
         try{
@@ -38,8 +38,8 @@ public class GoogleCloudVisionService {
             return httpURLConnection;
         } catch (IOException e) {
             System.out.println("Blad IO: " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     public String getGoogleVisionResponse(HttpURLConnection httpURLConnection){
@@ -57,9 +57,8 @@ public class GoogleCloudVisionService {
             httpResponseBodyScanner.close();
             return response;
         } catch (IOException e) {
-            System.out.println("Blad IO: " + e.getMessage());
+            return new RuntimeException(e).getMessage();
         }
-        return null;
     }
 
     public String getKlucz(){
