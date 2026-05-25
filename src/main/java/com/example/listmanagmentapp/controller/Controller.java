@@ -52,38 +52,9 @@ public class Controller {
         return list;
     }
 
-    //TODO: ustawić zabezpieczenia niedopuszczające osób trzecich do dodawania pozycji
-    @PostMapping("/dodajJson")
-    public void add(@RequestBody String json) {
-        try(Connection connection = dbConnectionConfig.dbConnection();
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO DaneJson (json) VALUES (?)")){
-            ps.setQueryTimeout(10);
-            objectMapper.readTree(json);
-            ps.setString(1, json);
-            ps.executeUpdate();
-        }  catch (Exception e){
-            System.out.println(e.getMessage());
-        }
-    }
-
-    //TODO: ustawić zabezpieczenia przed niechcianym usunięciem plików przez kogoś nieproszonego
-    @DeleteMapping("/usun/{wpis}")
-    public void delete(@PathVariable int wpis){
-        try(Connection connection = dbConnectionConfig.dbConnection();
-            PreparedStatement ps = connection.prepareStatement("DELETE FROM DaneJson WHERE id = ?")){
-            ps.setQueryTimeout(10);
-            ps.setInt(1, wpis);
-            if(ps.executeUpdate() == 0){
-                System.out.println("Nie znaleziono wpisu");
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
     //TODO: ustawić zabezpieczenia przed niechcianym usunięciem plików przez kogoś nieproszonego
     @DeleteMapping("/usun")
-    public void deleteAll(){
+    public ResponseEntity<?> deleteAll(){
         try(Connection connection = dbConnectionConfig.dbConnection();
             Statement statement = connection.createStatement()){
             statement.setQueryTimeout(10);
@@ -92,13 +63,51 @@ public class Controller {
                 statement.executeUpdate("DELETE FROM DaneJson");
                 statement.executeUpdate("Delete from sqlite_sequence where name = 'DaneJson'");
                 connection.commit();
+                return ResponseEntity.ok("Usunięto wszystkie wpisy");
             } catch (SQLException e) {
                 connection.rollback();
-                System.out.println(e.getMessage());
-            }
+                return ResponseEntity.badRequest().body("Blad: " + e.getMessage());            }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            return ResponseEntity.badRequest().body("Blad: " + e.getMessage());
         }
     }
 
+    //TODO: ustawić zabezpieczenia niedopuszczające osób trzecich do dodawania pozycji
+    @PostMapping("/dodajJson")
+    public void add(@RequestBody String json) {
+        addSafeQuery(json);
+    }
+
+    //TODO: ustawić zabezpieczenia przed niechcianym usunięciem plików przez kogoś nieproszonego
+    @DeleteMapping("/usun/{wpis}")
+    public void delete(@PathVariable int wpis){
+            deleteSafeQuery(wpis);
+    }
+
+    private ResponseEntity<?> deleteSafeQuery(int wpis) {
+        try(Connection connection = dbConnectionConfig.dbConnection();
+             PreparedStatement ps = connection.prepareStatement("DELETE FROM DaneJson WHERE id = ?")) {
+            ps.setQueryTimeout(10);
+            ps.setInt(1, wpis);
+            if(ps.executeUpdate() == 0){
+                System.out.println("Nie znaleziono wpisu");
+            }
+            return ResponseEntity.ok("OK");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Blad: " + e.getMessage());
+        }
+    }
+
+    private ResponseEntity<?> addSafeQuery(String json) {
+        try(Connection connection = dbConnectionConfig.dbConnection();
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO DaneJson (json) VALUES (?)")){
+            ps.setQueryTimeout(10);
+            objectMapper.readTree(json);
+            ps.setString(1, json);
+            ps.executeUpdate();
+            return ResponseEntity.ok("OK");
+        }  catch (Exception e){
+            return ResponseEntity.badRequest().body("Blad: " + e.getMessage());
+        }
+    }
 }
