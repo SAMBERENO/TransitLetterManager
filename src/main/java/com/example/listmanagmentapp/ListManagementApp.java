@@ -14,7 +14,7 @@ public class ListManagementApp {
 
         ImagePreProcessing imagePreProcessing = new ImagePreProcessing();
 
-        imagePreProcessing.straightenImage("C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ZdjeciaDoSkanowania/2.jpg");
+        imagePreProcessing.saveImage("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\tiltFull2.jpg");
 
         //GoogleCloudVisionService andek = new GoogleCloudVisionService();
 

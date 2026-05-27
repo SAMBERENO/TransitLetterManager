@@ -3,6 +3,7 @@ package com.example.listmanagmentapp.service;
 import com.sun.tools.javac.Main;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.CLAHE;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.stereotype.Service;
 
@@ -19,20 +20,47 @@ public class ImagePreProcessing {
 
     public ImagePreProcessing() {}
 
-    public Mat loadImage(String imagePath) {
-        Mat source = Imgcodecs.imread(imagePath);
+    private Mat returnImage(String imagePath){
+        return Imgcodecs.imread(imagePath);
+    }
+
+    public Mat grayImage(String imagePath){
         Mat gray = new Mat();
+        Imgproc.cvtColor(returnImage(imagePath), gray, Imgproc.COLOR_BGR2GRAY);
+        return gray;
+    }
+
+    public Mat claheImage(String imagePath){
+        Mat claheImg = new Mat();
+        CLAHE clahe = Imgproc.createCLAHE(2.0, new Size(8, 8));
+        clahe.apply(grayImage(imagePath), claheImg);
+        return claheImg;
+    }
+
+    public Mat blurImage(String imagePath){
         Mat blur = new Mat();
+        Imgproc.GaussianBlur(claheImage(imagePath), blur, new Size(3, 3), 0);
+        return blur;
+    }
+
+    public Mat sharpenImage(String imagePath){
         Mat sharpened = new Mat();
+        Core.addWeighted(grayImage(imagePath), 1.6, blurImage(imagePath), -0.6, 0, sharpened);
+        return sharpened;
+    }
+
+    public Mat binaryImage(String imagePath){
         Mat binary = new Mat();
-        Imgproc.cvtColor(source, gray, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.GaussianBlur(gray, blur, new Size(3, 3), 0);
-        Core.addWeighted(gray, 1.6, blur, -0.6, 0, sharpened);
-        Imgproc.adaptiveThreshold(sharpened, binary, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 41, 32);
-        Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\1.jpg", binary);
-        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(20, 5));
-        Imgproc.morphologyEx(binary, binary, Imgproc.MORPH_OPEN, kernel);
+        Imgproc.adaptiveThreshold(sharpenImage(imagePath), binary, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 31, 11);
+        Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\3FIN.jpg", binary);
         return binary;
+    }
+
+    public Mat morphologyImage(String imagePath){
+        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 1));
+        Mat morphologyImg = new Mat();
+        Imgproc.morphologyEx(binaryImage(imagePath), morphologyImg, Imgproc.MORPH_OPEN, kernel);
+        return morphologyImg;
     }
 
     private double detectRotationAngle(Mat binaryImage) {
@@ -40,7 +68,7 @@ public class ImagePreProcessing {
         Imgproc.HoughLinesP(binaryImage, lines, 1, Math.PI / 180, 100);
 
         double angle = 0;
-
+        System.out.println(lines.rows() + " " + lines.cols());
         //Do debugowania
         Mat debugImage = binaryImage.clone();
         Imgproc.cvtColor(debugImage, debugImage, Imgproc.COLOR_GRAY2BGR);
@@ -55,13 +83,13 @@ public class ImagePreProcessing {
             Point start = new Point(x1, y1);
             Point end = new Point(x2, y2);
 
-            Imgproc.line(debugImage, start, end, new Scalar(255, 255, 0), 5);
+            Imgproc.line(debugImage, start, end, new Scalar(255, 255, 0), 3);
 
             angle = calculateAngleFromPoints(start, end);
         }
 
         Imgcodecs.imwrite("detectedLines.jpg", debugImage);
-
+        System.out.println(angle);
         return angle;
     }
 
@@ -72,10 +100,9 @@ public class ImagePreProcessing {
     }
 
     private Mat rotateImage(Mat image, double angle) {
-        Point imgCenter = new Point(image.cols() / 2, image.rows() / 2);
+        Point imgCenter = new Point(image.cols() / 2.0, image.rows() / 2.0);
         Mat rotMtx = Imgproc.getRotationMatrix2D(imgCenter, angle, 1.0);
         Rect bbox = new RotatedRect(imgCenter, image.size(), angle).boundingRect();
-
         Mat rotatedImage = image.clone();
         Imgproc.warpAffine(image, rotatedImage, rotMtx, bbox.size());
 
@@ -83,10 +110,15 @@ public class ImagePreProcessing {
     }
 
     public Mat straightenImage(String image) {
-        Mat rotatedImage = Imgcodecs.imread(image);
-        Mat processed = loadImage(image);
+        Mat rotatedImage = binaryImage(image);
+        Mat processed = morphologyImage(image);
         double rotationAngle = detectRotationAngle(processed);
 
-        return rotateImage(rotatedImage, rotationAngle);
+        return rotateImage(rotatedImage, rotationAngle - 90);
+    }
+
+    public void saveImage(String path) {
+        Mat image = straightenImage(path);
+        Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\1.jpg", image);
     }
 }

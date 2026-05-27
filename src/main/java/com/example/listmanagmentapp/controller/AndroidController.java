@@ -31,7 +31,7 @@ public class AndroidController {
     @PostMapping("/essunia")
     public ResponseEntity<?> essunia(@RequestParam("file") MultipartFile file) {
         try{
-            imagePreProcessing.loadImage(addImage(file).getBody());
+            imagePreProcessing.straightenImage(addImage(file).getBody());
             gcvs.getGoogleVisionResponse(gcvs.requestGoogleVision());
 
             //TODO: Dokończyć z odpowiednim zdjęciem
