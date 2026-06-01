@@ -10,14 +10,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ImagePreProcessing {
 
-    /*
-    *
-    *
-        Klasa do weryfikacji przy odpowiednim zdjęciu
-    *
-    *
-     */
-
     public ImagePreProcessing() {}
 
     private Mat returnImage(String imagePath){
@@ -51,8 +43,8 @@ public class ImagePreProcessing {
 
     public Mat binaryImage(String imagePath){
         Mat binary = new Mat();
+        //TODO: potestować parametr C
         Imgproc.adaptiveThreshold(sharpenImage(imagePath), binary, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 31, 11);
-        Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\3FIN.jpg", binary);
         return binary;
     }
 
