@@ -7,6 +7,9 @@ import org.opencv.imgproc.CLAHE;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class ImagePreProcessing {
 
@@ -80,7 +83,6 @@ public class ImagePreProcessing {
             angle = calculateAngleFromPoints(start, end);
         }
 
-        Imgcodecs.imwrite("detectedLines.jpg", debugImage);
         System.out.println(angle);
         return angle;
     }
@@ -109,8 +111,65 @@ public class ImagePreProcessing {
         return rotateImage(rotatedImage, rotationAngle - 90);
     }
 
+    public List<MatOfPoint> findContours(String image) {
+        Mat depth = straightenImage(image);
+        List<MatOfPoint> contours = new ArrayList<>();
+        Imgproc.findContours(depth, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        System.out.println("Rozmiar contours listy: " + contours.size());
+        return contours;
+    }
+
+    public List<Point> approxPolyDP(String image) {
+        List<MatOfPoint> contours = findContours(image);
+        List<Point> pointList = new ArrayList<>();
+        List<MatOfPoint2f> hierarchy = new ArrayList<>();
+
+        MatOfPoint2f bestApprox = null;
+        double bestArea = 0;
+
+        int a = 0;
+
+        for (MatOfPoint contour : contours) {
+            MatOfPoint2f curve = new MatOfPoint2f(contour.toArray());
+            double perimeter = Imgproc.arcLength(curve, true);
+            MatOfPoint2f approxCurve = new MatOfPoint2f();
+            Imgproc.approxPolyDP(curve, approxCurve, perimeter * 0.02, true);
+
+
+            double area = Imgproc.contourArea(approxCurve);
+            if (approxCurve.total() == 4 && area > bestArea) {
+                bestArea = area;
+                bestApprox = approxCurve;
+            }
+        }
+        for (Point p : bestApprox.toArray()) {
+            pointList.add(p);
+            System.out.println("Punkt: " + p);
+        }
+
+        System.out.println("Rozmiar listy punktow: " + pointList.size());
+        return pointList;
+    }
+
+
+    public Mat getPerspectiveTransform(String image) {
+        Mat depth = Imgcodecs.imread(image);
+        List<Point> pointList = approxPolyDP(image);
+        System.out.println(pointList.size());
+        MatOfPoint2f src = new MatOfPoint2f(pointList.get(0), pointList.get(1), pointList.get(2), pointList.get(3));
+        MatOfPoint2f dst = new MatOfPoint2f(new Point(0, 0), new Point(depth.cols(), 0), new Point(depth.cols(), depth.rows()), new Point(0, depth.rows()));
+        return Imgproc.getPerspectiveTransform(src, dst);
+    }
+
+    public Mat test2(String image) {
+        Mat depth = Imgcodecs.imread(image);
+        Mat dst = new Mat();
+        Imgproc.warpPerspective(depth, dst, getPerspectiveTransform(image), depth.size());
+        return dst;
+    }
+
     public void saveImage(String path) {
-        Mat image = straightenImage(path);
+        Mat image = test2(path);
         Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\1.jpg", image);
     }
 }
