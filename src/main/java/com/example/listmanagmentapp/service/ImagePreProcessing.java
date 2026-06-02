@@ -1,6 +1,5 @@
 package com.example.listmanagmentapp.service;
 
-import com.sun.tools.javac.Main;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.CLAHE;
@@ -46,7 +45,6 @@ public class ImagePreProcessing {
 
     public Mat binaryImage(String imagePath){
         Mat binary = new Mat();
-        //TODO: potestować parametr C
         Imgproc.adaptiveThreshold(sharpenImage(imagePath), binary, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 31, 11);
         return binary;
     }
@@ -99,35 +97,56 @@ public class ImagePreProcessing {
         Rect bbox = new RotatedRect(imgCenter, image.size(), angle).boundingRect();
         Mat rotatedImage = image.clone();
         Imgproc.warpAffine(image, rotatedImage, rotMtx, bbox.size());
-
         return rotatedImage;
     }
 
-    public Mat straightenImage(String image) {
-        Mat rotatedImage = binaryImage(image);
-        Mat processed = morphologyImage(image);
+    public Mat straightenImage(String imagePath) {
+        Mat straightenImage = binaryImage(imagePath);
+        Mat processed = morphologyImage(imagePath);
         double rotationAngle = detectRotationAngle(processed);
-
-        return rotateImage(rotatedImage, rotationAngle - 90);
+        return rotateImage(straightenImage, rotationAngle - 90);
     }
 
-    public List<MatOfPoint> findContours(String image) {
-        Mat depth = straightenImage(image);
+    public List<MatOfPoint> findContours(String imagePath) {
+        Mat source = returnImage(imagePath);
+        Mat gray = new Mat();
+        Mat blur = new Mat();
+        Mat edges = new Mat();
+
+        Imgproc.cvtColor(source, gray, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.GaussianBlur(gray, blur, new Size(7, 7), 0);
+        Imgproc.Canny(blur, edges, 30, 70);
+
+        Mat processed = morphologyImage(imagePath);
+        double rotationAngle = detectRotationAngle(processed);
+        rotateImage(edges, rotationAngle - 90);
+
+        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
+
+        Imgproc.dilate(edges, edges, kernel);
+
         List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(depth, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(edges, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
         System.out.println("Rozmiar contours listy: " + contours.size());
+        Imgcodecs.imwrite("kontury.jpg", edges);
         return contours;
     }
 
-    public List<Point> approxPolyDP(String image) {
-        List<MatOfPoint> contours = findContours(image);
+
+
+    /*public List<MatOfPoint> findContours(String image) {
+        Mat contoured = straightenImage(image);
+        List<MatOfPoint> contours = new ArrayList<>();
+        Imgproc.findContours(contoured, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        return contours;
+    }*/
+
+    public List<Point> approxPolyDP(String imagePath) {
+        List<MatOfPoint> contours = findContours(imagePath);
         List<Point> pointList = new ArrayList<>();
-        List<MatOfPoint2f> hierarchy = new ArrayList<>();
 
         MatOfPoint2f bestApprox = null;
         double bestArea = 0;
-
-        int a = 0;
 
         for (MatOfPoint contour : contours) {
             MatOfPoint2f curve = new MatOfPoint2f(contour.toArray());
@@ -135,41 +154,42 @@ public class ImagePreProcessing {
             MatOfPoint2f approxCurve = new MatOfPoint2f();
             Imgproc.approxPolyDP(curve, approxCurve, perimeter * 0.02, true);
 
-
             double area = Imgproc.contourArea(approxCurve);
             if (approxCurve.total() == 4 && area > bestArea) {
                 bestArea = area;
                 bestApprox = approxCurve;
+                System.out.println("Punkty: " + approxCurve.total() + " Area: " + area);
             }
         }
         for (Point p : bestApprox.toArray()) {
             pointList.add(p);
             System.out.println("Punkt: " + p);
         }
-
+        System.out.println("BestApprox: " + bestApprox);
+        System.out.println("BestArea: " + bestArea);
         System.out.println("Rozmiar listy punktow: " + pointList.size());
         return pointList;
     }
 
 
-    public Mat getPerspectiveTransform(String image) {
-        Mat depth = Imgcodecs.imread(image);
-        List<Point> pointList = approxPolyDP(image);
+    public Mat getPerspectiveTransform(String imagePath) {
+        Mat depth = Imgcodecs.imread(imagePath);
+        List<Point> pointList = approxPolyDP(imagePath);
         System.out.println(pointList.size());
         MatOfPoint2f src = new MatOfPoint2f(pointList.get(0), pointList.get(1), pointList.get(2), pointList.get(3));
         MatOfPoint2f dst = new MatOfPoint2f(new Point(0, 0), new Point(depth.cols(), 0), new Point(depth.cols(), depth.rows()), new Point(0, depth.rows()));
         return Imgproc.getPerspectiveTransform(src, dst);
     }
 
-    public Mat test2(String image) {
-        Mat depth = Imgcodecs.imread(image);
+    public Mat test2(String imagePath) {
+        Mat depth = straightenImage(imagePath);
         Mat dst = new Mat();
-        Imgproc.warpPerspective(depth, dst, getPerspectiveTransform(image), depth.size());
+        Imgproc.warpPerspective(depth, dst, getPerspectiveTransform(imagePath), depth.size());
         return dst;
     }
 
-    public void saveImage(String path) {
-        Mat image = test2(path);
+    public void saveImage(String imagePath) {
+        Mat image = test2(imagePath);
         Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\1.jpg", image);
     }
 }
