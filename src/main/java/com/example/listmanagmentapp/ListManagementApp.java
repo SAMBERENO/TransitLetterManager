@@ -1,8 +1,6 @@
 package com.example.listmanagmentapp;
 
-import com.example.listmanagmentapp.controller.AndroidController;
-import com.example.listmanagmentapp.service.GoogleCloudVisionService;
-import com.example.listmanagmentapp.service.ImagePreProcessing;
+import com.example.listmanagmentapp.service.ImagePreProcessingDeWarping;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -12,9 +10,11 @@ public class ListManagementApp {
     public static void main(String[] args) {
         SpringApplication.run(ListManagementApp.class, args);
 
-        ImagePreProcessing imagePreProcessing = new ImagePreProcessing();
+        //ImagePreProcessing imagePreProcessing = new ImagePreProcessing();
 
-        imagePreProcessing.saveImage("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\tiltFull2.jpg");
+        ImagePreProcessingDeWarping imagePreProcessing = new ImagePreProcessingDeWarping();
+
+        imagePreProcessing.saveImage("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\bigger2.jpg");
 
         //GoogleCloudVisionService andek = new GoogleCloudVisionService();
 

@@ -6,6 +6,9 @@ import org.opencv.imgproc.CLAHE;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class ImagePreProcessingDeWarping {
 
@@ -101,11 +104,72 @@ public class ImagePreProcessingDeWarping {
         Mat straightenImage = binaryImage(imagePath);
         Mat processed = morphologyImage(imagePath);
         double rotationAngle = detectRotationAngle(processed);
-        return rotateImage(straightenImage, rotationAngle - 90);
+        return rotateImage(straightenImage, rotationAngle);
+    }
+
+    public List<MatOfPoint> findContours(String imagePath) {
+        Mat source = returnImage(imagePath);
+        Mat gray = new Mat();
+        Mat blur = new Mat();
+        Mat edges = new Mat();
+
+        Imgproc.cvtColor(source, gray, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.GaussianBlur(gray, blur, new Size(7, 7), 0);
+        Imgproc.Canny(blur, edges, 30, 70);
+
+        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
+
+        Imgproc.dilate(edges, edges, kernel);
+
+        List<MatOfPoint> contours = new ArrayList<>();
+        Imgproc.findContours(edges, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        System.out.println("Rozmiar contours listy: " + contours.size());
+        Imgcodecs.imwrite("kontury.jpg", edges);
+        return contours;
+    }
+
+    public List<Point> approxPolyDP(String imagePath) {
+        List<MatOfPoint> contours = findContours(imagePath);
+        List<Point> pointList = new ArrayList<>();
+
+        MatOfPoint2f bestApprox = null;
+        double bestArea = 0;
+
+        for (MatOfPoint contour : contours) {
+            MatOfPoint2f curve = new MatOfPoint2f(contour.toArray());
+            double perimeter = Imgproc.arcLength(curve, true);
+            MatOfPoint2f approxCurve = new MatOfPoint2f();
+            Imgproc.approxPolyDP(curve, approxCurve, perimeter * 0.02, true);
+
+            double area = Imgproc.contourArea(approxCurve);
+            if (approxCurve.total() == 4 && area > bestArea) {
+                bestArea = area;
+                bestApprox = approxCurve;
+                System.out.println("Punkty: " + approxCurve.total() + " Area: " + area);
+            }
+        }
+        for (Point p : bestApprox.toArray()) {
+            pointList.add(p);
+            System.out.println("Punkt: " + p);
+        }
+        System.out.println("BestApprox: " + bestApprox);
+        System.out.println("BestArea: " + bestArea);
+        System.out.println("Rozmiar listy punktow: " + pointList.size());
+        return pointList;
+    }
+
+    public Mat huj(String imagePath){
+        Mat depth = returnImage(imagePath);
+        List<Point> pointList = approxPolyDP(imagePath);
+        MatOfPoint2f src = new MatOfPoint2f(pointList.get(3), pointList.get(2), pointList.get(1), pointList.get(0));
+        Rect y = Imgproc.boundingRect(src);
+        Mat croped = new Mat(depth, y);
+        Imgcodecs.imwrite("cropped.jpg", croped);
+        return croped;
     }
 
     public void saveImage(String imagePath) {
-        Mat image = straightenImage(imagePath);
+        Mat image = huj(imagePath);
         Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\1.jpg", image);
     }
 

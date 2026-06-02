@@ -117,10 +117,6 @@ public class ImagePreProcessing {
         Imgproc.GaussianBlur(gray, blur, new Size(7, 7), 0);
         Imgproc.Canny(blur, edges, 30, 70);
 
-        Mat processed = morphologyImage(imagePath);
-        double rotationAngle = detectRotationAngle(processed);
-        rotateImage(edges, rotationAngle - 90);
-
         Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
 
         Imgproc.dilate(edges, edges, kernel);
@@ -180,19 +176,9 @@ public class ImagePreProcessing {
         return dst;
     }
 
-    public Mat imageNarrowing(String imagePath) {
-        Mat depth = straightenImage(imagePath);
-        Mat narrowed = new Mat();
-
-        Imgproc.HoughLinesP(depth,narrowed, 4, Math.PI / 180, 100);
-
-        return narrowed;
-    }
 
     public void saveImage(String imagePath) {
-        Mat image = straightenImage(imagePath);
-        imageNarrowing(imagePath);
-        //Mat image = warpPerspective(imagePath);
+        Mat image = warpPerspective(imagePath);
         Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\1.jpg", image);
     }
 }
