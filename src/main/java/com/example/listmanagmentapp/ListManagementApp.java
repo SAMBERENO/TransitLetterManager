@@ -1,5 +1,6 @@
 package com.example.listmanagmentapp;
 
+import com.example.listmanagmentapp.service.ImagePreProcessing;
 import com.example.listmanagmentapp.service.ImagePreProcessingDeWarping;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,7 +15,7 @@ public class ListManagementApp {
 
         ImagePreProcessingDeWarping imagePreProcessing = new ImagePreProcessingDeWarping();
 
-        imagePreProcessing.saveImage("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\bigger2.jpg");
+        imagePreProcessing.saveImage("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\croppedTest.jpg");
 
         //GoogleCloudVisionService andek = new GoogleCloudVisionService();
 

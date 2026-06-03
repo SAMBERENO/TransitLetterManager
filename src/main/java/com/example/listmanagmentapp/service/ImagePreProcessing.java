@@ -115,7 +115,7 @@ public class ImagePreProcessing {
 
         Imgproc.cvtColor(source, gray, Imgproc.COLOR_BGR2GRAY);
         Imgproc.GaussianBlur(gray, blur, new Size(7, 7), 0);
-        Imgproc.Canny(blur, edges, 30, 70);
+        Imgproc.Canny(blur, edges, 40, 90);
 
         Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
 
@@ -178,7 +178,7 @@ public class ImagePreProcessing {
 
 
     public void saveImage(String imagePath) {
-        Mat image = warpPerspective(imagePath);
+        Mat image = getPerspectiveTransform(imagePath);
         Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\1.jpg", image);
     }
 }
