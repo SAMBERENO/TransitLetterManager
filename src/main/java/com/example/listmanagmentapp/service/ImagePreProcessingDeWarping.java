@@ -2,8 +2,8 @@ package com.example.listmanagmentapp.service;
 
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.CLAHE;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.photo.Photo;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,46 +18,80 @@ public class ImagePreProcessingDeWarping {
         return Imgcodecs.imread(imagePath);
     }
 
+    public Mat bilateralFilter(String imagePath){
+        Mat image = returnImage(imagePath);
+        Mat bilateral = new Mat();
+        Imgproc.bilateralFilter(image, bilateral, 20, 100, 100);
+        return bilateral;
+    }
+
+    public Mat nlm(String imagePath){
+        Mat image = bilateralFilter(imagePath);
+        Mat nlm = new Mat();
+        Photo.fastNlMeansDenoising(image, nlm, 10, 31, 51);
+        return nlm;
+    }
+
     public Mat grayImage(String imagePath){
+        Mat image = nlm(imagePath);
         Mat gray = new Mat();
-        Imgproc.cvtColor(returnImage(imagePath), gray, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cvtColor(image, gray, Imgproc.COLOR_BGR2GRAY);
         return gray;
     }
 
-    public Mat claheImage(String imagePath){
-        Mat claheImg = new Mat();
-        CLAHE clahe = Imgproc.createCLAHE(2.0, new Size(8, 8));
-        clahe.apply(grayImage(imagePath), claheImg);
-        return claheImg;
-    }
-
-    public Mat blurImage(String imagePath){
-        Mat blur = new Mat();
-        Imgproc.GaussianBlur(claheImage(imagePath), blur, new Size(3, 3), 0);
-        return blur;
-    }
-
-    public Mat sharpenImage(String imagePath){
-        Mat sharpened = new Mat();
-        Core.addWeighted(grayImage(imagePath), 1.6, blurImage(imagePath), -0.6, 0, sharpened);
-        return sharpened;
-    }
-
     public Mat binaryImage(String imagePath){
+        Mat image = grayImage(imagePath);
         Mat binary = new Mat();
-        Imgproc.adaptiveThreshold(sharpenImage(imagePath), binary, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 31, 11);
+        Imgproc.adaptiveThreshold(image, binary, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY_INV, 31, 21); //41, 31 najlepsze wartosci
         return binary;
     }
 
+    public Mat medianBlur(String imagePath){
+        Mat image = binaryImage(imagePath);
+        Mat median = new Mat();
+        Imgproc.medianBlur(image, median, 5);
+        Imgcodecs.imwrite("medianBlur.jpg", median);
+        return median;
+    }
+
+    public List<MatOfPoint> findContours(String imagePath) {
+        Mat source = medianBlur(imagePath);
+        List<MatOfPoint> contours = new ArrayList<>();
+        Imgproc.findContours(source, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        System.out.println("Rozmiar contours listy: " + contours.size());
+        Imgcodecs.imwrite("kontury.jpg", source);
+        return contours;
+    }
+
     public Mat morphologyImage(String imagePath){
-        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 1));
-        Mat morphologyImg = new Mat();
-        Imgproc.morphologyEx(binaryImage(imagePath), morphologyImg, Imgproc.MORPH_OPEN, kernel);
-        return morphologyImg;
+        Mat medianImage = medianBlur(imagePath);
+        Mat verticalKernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 40));
+        Mat verticalMorphology = new Mat();
+        Mat cleanedImage = new Mat();
+
+        Imgproc.morphologyEx(medianImage, verticalMorphology, Imgproc.MORPH_CLOSE, verticalKernel);
+        Imgproc.morphologyEx(verticalMorphology, verticalMorphology, Imgproc.MORPH_DILATE, verticalKernel);
+
+        Imgcodecs.imwrite("verticalMorph.jpg", verticalMorphology);
+
+        Photo.inpaint(medianImage, verticalMorphology, cleanedImage, 1, Photo.INPAINT_TELEA);
+
+        return cleanedImage;
+    }
+
+    public Mat morphologyDilation(String imagePath){
+        Mat morphologyImage = morphologyImage(imagePath);
+        List<MatOfPoint> contours = findContours(imagePath);
+        for (MatOfPoint contour : contours) {
+            Rect rect = Imgproc.boundingRect(contour);
+            if (rect.width < 500 && rect.height < 150) Imgproc.rectangle(morphologyImage, rect.tl(), rect.br(), new Scalar(255, 0, 0), -1);
+
+        }
+        return morphologyImage;
     }
 
     public void saveImage(String imagePath) {
-        Mat image = binaryImage(imagePath);
+        Mat image = morphologyDilation(imagePath);
         Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\1.jpg", image);
     }
 
