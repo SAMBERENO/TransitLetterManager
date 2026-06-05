@@ -50,7 +50,7 @@ public class ImagePreProcessingDeWarping {
         Mat image = binaryImage(imagePath);
         Mat median = new Mat();
         Imgproc.medianBlur(image, median, 5);
-        Imgcodecs.imwrite("medianBlur.jpg", median);
+        Imgcodecs.imwrite("medianblur.jpg", median);
         return median;
     }
 
@@ -58,12 +58,10 @@ public class ImagePreProcessingDeWarping {
         Mat source = medianBlur(imagePath);
         List<MatOfPoint> contours = new ArrayList<>();
         Imgproc.findContours(source, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-        System.out.println("Rozmiar contours listy: " + contours.size());
-        Imgcodecs.imwrite("kontury.jpg", source);
         return contours;
     }
 
-    public Mat morphologyImage(String imagePath){
+    public Mat verticalLinesRemoval(String imagePath){
         Mat medianImage = medianBlur(imagePath);
         Mat verticalKernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 40));
         Mat verticalMorphology = new Mat();
@@ -72,21 +70,19 @@ public class ImagePreProcessingDeWarping {
         Imgproc.morphologyEx(medianImage, verticalMorphology, Imgproc.MORPH_CLOSE, verticalKernel);
         Imgproc.morphologyEx(verticalMorphology, verticalMorphology, Imgproc.MORPH_DILATE, verticalKernel);
 
-        Imgcodecs.imwrite("verticalMorph.jpg", verticalMorphology);
-
         Photo.inpaint(medianImage, verticalMorphology, cleanedImage, 1, Photo.INPAINT_TELEA);
-
         return cleanedImage;
     }
 
-    public Mat morphologyDilation(String imagePath){
-        Mat morphologyImage = morphologyImage(imagePath);
+    public Mat morphologyDilation(String imagePath) {
+        Mat morphologyImage = verticalLinesRemoval(imagePath);
         List<MatOfPoint> contours = findContours(imagePath);
         for (MatOfPoint contour : contours) {
             Rect rect = Imgproc.boundingRect(contour);
-            if (rect.width < 500 && rect.height < 150) Imgproc.rectangle(morphologyImage, rect.tl(), rect.br(), new Scalar(255, 0, 0), -1);
-
+            if (rect.width < 500 && rect.height < 150 && rect.width > 20 && rect.height > 10)
+                Imgproc.rectangle(morphologyImage, rect.tl(), rect.br(), new Scalar(255, 0, 0), -1);
         }
+        Imgcodecs.imwrite("morphed.jpg", morphologyImage);
         return morphologyImage;
     }
 
