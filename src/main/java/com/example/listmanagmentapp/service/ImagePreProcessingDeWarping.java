@@ -74,13 +74,12 @@ public class ImagePreProcessingDeWarping {
         return cleanedImage;
     }
 
-    public Mat morphologyDilation(String imagePath) {
+    public Mat morphologyDilation(String imagePath){
         Mat morphologyImage = verticalLinesRemoval(imagePath);
         List<MatOfPoint> contours = findContours(imagePath);
         for (MatOfPoint contour : contours) {
             Rect rect = Imgproc.boundingRect(contour);
-            if (rect.width < 500 && rect.height < 150 && rect.width > 20 && rect.height > 10)
-                Imgproc.rectangle(morphologyImage, rect.tl(), rect.br(), new Scalar(255, 0, 0), -1);
+            if (rect.width < 500 && rect.height < 150 && rect.width > 20 && rect.height > 10) Imgproc.rectangle(morphologyImage, rect.tl(), rect.br(), new Scalar(255, 0, 0), -1);
         }
         Imgcodecs.imwrite("morphed.jpg", morphologyImage);
         return morphologyImage;
@@ -90,5 +89,15 @@ public class ImagePreProcessingDeWarping {
         Mat image = morphologyDilation(imagePath);
         Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\1.jpg", image);
     }
+
+    /* TODO:
+    Do zrobienia spanów:
+1. --findContours / connectedComponents
+2. --boundingRect dla każdego elementu
+3. policz odległości między elementami
+4. połącz bliskie elementy
+5. utwórz grupę (span)
+6. utwórz jeden duży bounding box dla grupy
+     */
 
 }
