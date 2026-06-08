@@ -7,6 +7,7 @@ import org.opencv.photo.Photo;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -57,7 +58,7 @@ public class ImagePreProcessingDeWarping {
     public List<MatOfPoint> findContours(String imagePath) {
         Mat source = medianBlur(imagePath);
         List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(source, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(source, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
         return contours;
     }
 
@@ -77,11 +78,22 @@ public class ImagePreProcessingDeWarping {
     public Mat morphologyDilation(String imagePath){
         Mat morphologyImage = verticalLinesRemoval(imagePath);
         List<MatOfPoint> contours = findContours(imagePath);
+        List<Rect> rectangles = new ArrayList<>();
         for (MatOfPoint contour : contours) {
             Rect rect = Imgproc.boundingRect(contour);
-            if (rect.width < 500 && rect.height < 150 && rect.width > 20 && rect.height > 10) Imgproc.rectangle(morphologyImage, rect.tl(), rect.br(), new Scalar(255, 0, 0), -1);
+            rectangles.add(rect);
+            //if (rect.width < 500 && rect.height < 150 && rect.width > 20 && rect.height > 10) Imgproc.rectangle(morphologyImage, rect.tl(), rect.br(), new Scalar(255, 0, 0), -1);
         }
+        rectangles.sort(Comparator.comparingInt(y -> y.y));
+        List<List<Rect>> lista = new ArrayList<>();
+        for (Rect rects : rectangles) {
+        }
+
         Imgcodecs.imwrite("morphed.jpg", morphologyImage);
+        rectangles.sort(Comparator.comparingInt(x -> x.x));
+        for (Rect rect : rectangles){
+            System.out.println(rect.x + " " + rect.y + " " + rect.width + " " + rect.height);
+        }
         return morphologyImage;
     }
 
