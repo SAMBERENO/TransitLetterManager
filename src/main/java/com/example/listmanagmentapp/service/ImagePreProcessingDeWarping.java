@@ -1,5 +1,6 @@
 package com.example.listmanagmentapp.service;
 
+import com.example.listmanagmentapp.dto.CenterOfRect;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -7,13 +8,22 @@ import org.opencv.photo.Photo;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class ImagePreProcessingDeWarping {
 
     public ImagePreProcessingDeWarping() {}
+
+    private Point center(Rect rect) {
+        int centerX = rect.x + (rect.width / 2);
+        int centerY = rect.y + (rect.height / 2);
+        return new Point(centerX, centerY);
+    }
+
+    private boolean isInRange(Point point0, Point point1){
+        return (point0.x + 40 >= point1.x || point0.x - 40 <= point1.x) && point0.y + 20 >= point1.y && point0.y - 20 <= point1.y;
+    }
 
     private Mat returnImage(String imagePath){
         return Imgcodecs.imread(imagePath);
@@ -78,24 +88,45 @@ public class ImagePreProcessingDeWarping {
     public Mat morphologyDilation(String imagePath){
         Mat morphologyImage = verticalLinesRemoval(imagePath);
         List<MatOfPoint> contours = findContours(imagePath);
-        List<Rect> rectangles = new ArrayList<>();
+        List<CenterOfRect> rectangles = new ArrayList<>();
         for (MatOfPoint contour : contours) {
             Rect rect = Imgproc.boundingRect(contour);
-            rectangles.add(rect);
+            CenterOfRect rectCenter = new CenterOfRect(rect ,center(rect));
+            rectangles.add(rectCenter);
             //if (rect.width < 500 && rect.height < 150 && rect.width > 20 && rect.height > 10) Imgproc.rectangle(morphologyImage, rect.tl(), rect.br(), new Scalar(255, 0, 0), -1);
         }
-        rectangles.sort(Comparator.comparingInt(y -> y.y));
-        List<List<Rect>> lista = new ArrayList<>();
-        for (Rect rects : rectangles) {
+
+        Mat mat = Mat.zeros(morphologyImage.rows(), morphologyImage.cols(), CvType.CV_8UC1);
+
+        for (CenterOfRect rectangle : rectangles) {
+            mat.put((int) rectangle.center().x, (int) rectangle.center().y, 255);
+        }
+
+        List<Point> points = new ArrayList<>();
+        for (int i = 0; i < mat.rows(); i++) {
+            for (int j = 0; j < mat.cols(); j++) {
+                double value = mat.get(j, i)[0];
+                if (value != 0){
+                    points.add(new Point(j, i));
+                    mat.put(j, i, 0);
+                    Rect sparwdz = new Rect();//TODO: Tu kontynuować
+                }
+            }
         }
 
         Imgcodecs.imwrite("morphed.jpg", morphologyImage);
-        rectangles.sort(Comparator.comparingInt(x -> x.x));
-        for (Rect rect : rectangles){
-            System.out.println(rect.x + " " + rect.y + " " + rect.width + " " + rect.height);
-        }
         return morphologyImage;
     }
+
+    /* TODO:
+    - Utworzenie Mat() z punktami w środku każdego prostokątu
+    - Pętla skacząca po każdej kolumnie i rzędzie w poszukiwaniu tych punktów
+    - Znaleziony punkt zostaje dodany do nowej kolekcji, a następnie wymazany z Mat()
+    - Od współrzędnych wymazanego punktu utworzyć prostokąt, który będzie polem do przeszukania kolejnych sąsiednich punktów
+    - Powtórzyć od 2 kroku dla mniejszego utworzonego prostokąta
+    - Jeśli pętla niczego już nie znajdzie w utworzonych prostokątach, należy wrócić do kroku 2 na pełnym Mat()
+     */
+
 
     public void saveImage(String imagePath) {
         Mat image = morphologyDilation(imagePath);
@@ -106,7 +137,7 @@ public class ImagePreProcessingDeWarping {
     Do zrobienia spanów:
 1. --findContours / connectedComponents
 2. --boundingRect dla każdego elementu
-3. policz odległości między elementami
+3. --policz odległości między elementami
 4. połącz bliskie elementy
 5. utwórz grupę (span)
 6. utwórz jeden duży bounding box dla grupy
