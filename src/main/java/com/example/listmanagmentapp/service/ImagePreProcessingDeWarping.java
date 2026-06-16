@@ -1,6 +1,6 @@
 package com.example.listmanagmentapp.service;
 
-import com.example.listmanagmentapp.dto.CenterOfRect;
+import com.example.listmanagmentapp.model.CenterOfRect;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -15,12 +15,7 @@ public class ImagePreProcessingDeWarping {
 
     public ImagePreProcessingDeWarping() {}
 
-    private Point center(Rect rect) {
-        int centerX = rect.x + (rect.width / 2);
-        int centerY = rect.y + (rect.height / 2);
-        return new Point(centerX, centerY);
-    }
-
+    //TODO: Ta metoda najprawdopodobniej jest zbędna
     private boolean isInRange(Point point0, Point point1){
         return (point0.x + 40 >= point1.x || point0.x - 40 <= point1.x) && point0.y + 20 >= point1.y && point0.y - 20 <= point1.y;
     }
@@ -91,49 +86,79 @@ public class ImagePreProcessingDeWarping {
         List<CenterOfRect> rectangles = new ArrayList<>();
         for (MatOfPoint contour : contours) {
             Rect rect = Imgproc.boundingRect(contour);
-            CenterOfRect rectCenter = new CenterOfRect(rect ,center(rect));
+            CenterOfRect rectCenter = new CenterOfRect(rect);
             rectangles.add(rectCenter);
             //if (rect.width < 500 && rect.height < 150 && rect.width > 20 && rect.height > 10) Imgproc.rectangle(morphologyImage, rect.tl(), rect.br(), new Scalar(255, 0, 0), -1);
         }
 
         Mat mat = Mat.zeros(morphologyImage.rows(), morphologyImage.cols(), CvType.CV_8UC1);
+        Mat marked = Mat.zeros(morphologyImage.rows(), morphologyImage.cols(), CvType.CV_8UC1);
 
         for (CenterOfRect rectangle : rectangles) {
             mat.put((int) rectangle.center().x, (int) rectangle.center().y, 255);
         }
 
+        int xFromPrevPoint = 50;
+        int yFromPrevPoint = 10;
         List<List<Point>> spansList = new ArrayList<>();
-        List<Point> points = new ArrayList<>();
-
         for (int i = 0; i < mat.rows(); i++) {
             for (int j = 0; j < mat.cols(); j++) {
-                double value = mat.get(j, i)[0];
+                boolean nextLoop = false;
+                double value = mat.get(i, j)[0];
                 double valueLeft = 0;
                 double valueRight = 0;
                 if (value != 0) {
+                    List<Point> points = new ArrayList<>();
                     points.add(new Point(j, i)); //Zapisuje punkt startowy grupy do listy
                     mat.put(j, i, 0);
                     do {
-                        //Rect leftCheck = new Rect(j - 15, i + 5, 14,10);
-                        Rect rightCheck = new Rect(j + 1, i + 5, 15, 10);
-                        Mat checkLeft = new Mat(morphologyImage, new Rect(j - 15, i + 5, 14, 10));
+                        Mat checkLeft = new Mat(morphologyImage, new Rect((int) points.getLast().x - xFromPrevPoint, (int) points.getLast().y - yFromPrevPoint, 50, 20)); //Rozmiary do sprawdzenia
+                        checkLeft:
                         for (int rows = 0; rows < checkLeft.rows(); rows++) {
                             for (int cols = 0; cols < checkLeft.cols(); cols++) {
-                                valueLeft = checkLeft.get(cols, rows)[0];
+                                valueLeft = checkLeft.get(rows, cols)[0];
                                 if (valueLeft != 0) {
-                                    points.add(new Point(cols, rows));
-                                    mat.put(cols, rows, 0);
-                                    break; //Sprawdzić zakres, tzn. czy wywali mnie z jednego loopa czy ze wszystkich xD
+                                    points.add(new Point(points.getLast().x - xFromPrevPoint + rows, points.getLast().y - yFromPrevPoint + cols));
+                                    Imgproc.line(marked, points.getLast(), points.get(points.size() - 1), new Scalar(255, 0, 0), 3);
+                                    mat.put((int) points.getLast().x - xFromPrevPoint + rows, (int) points.getLast().y - yFromPrevPoint + cols, 0);
+                                    nextLoop = true;
+                                    break checkLeft; //Sprawdzić zakres, tzn. czy wywali mnie z jednego loopa czy ze wszystkich xD
                                 }
+                                nextLoop = false;
                             }
                         }
 
-                    } while (valueLeft == 0); //Zmienić value na wartość przypisywaną w tym do while
+                    } while (nextLoop);
+
+                    do {
+                        Mat checkRight = new Mat(morphologyImage, new Rect((int) points.getLast().x, (int) points.getLast().y - yFromPrevPoint, 50, 20)); //Rozmiary do sprawdzenia
+                        checkRight:
+                        for (int rows = 0; rows < checkRight.rows(); rows++){
+                            for (int cols = 0; cols < checkRight.cols(); cols++) {
+                                valueRight = checkRight.get(rows, cols)[0];
+                                if(valueRight != 0) {
+                                    points.add(new Point(points.getLast().x + rows, points.getLast().y - yFromPrevPoint + cols));
+                                    Imgproc.line(marked, points.getLast(), points.get(points.size() - 1), new Scalar(255, 0, 0), 10);
+                                    mat.put((int) points.getLast().x + rows, (int) points.getLast().y - yFromPrevPoint + cols, 0);
+                                    nextLoop = true;
+                                    break checkRight;
+                                }
+                                nextLoop = false;
+                            }
+                        }
+                    } while (nextLoop);
+                    spansList.add(points);
+                    for (Point point : points){
+                        System.out.println(point);
+                    }
                 }
             }
         }
 
+
+
         Imgcodecs.imwrite("morphed.jpg", morphologyImage);
+        Imgcodecs.imwrite("marked.jpg", marked);
         return morphologyImage;
     }
 
