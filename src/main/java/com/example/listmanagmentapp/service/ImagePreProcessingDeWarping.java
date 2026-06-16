@@ -102,14 +102,33 @@ public class ImagePreProcessingDeWarping {
             mat.put((int) rectangle.center().x, (int) rectangle.center().y, 255);
         }
 
+        List<List<Point>> spansList = new ArrayList<>();
         List<Point> points = new ArrayList<>();
+
         for (int i = 0; i < mat.rows(); i++) {
             for (int j = 0; j < mat.cols(); j++) {
                 double value = mat.get(j, i)[0];
-                if (value != 0){
-                    points.add(new Point(j, i));
+                double valueLeft = 0;
+                double valueRight = 0;
+                if (value != 0) {
+                    points.add(new Point(j, i)); //Zapisuje punkt startowy grupy do listy
                     mat.put(j, i, 0);
-                    Rect sparwdz = new Rect();//TODO: Tu kontynuować
+                    do {
+                        //Rect leftCheck = new Rect(j - 15, i + 5, 14,10);
+                        Rect rightCheck = new Rect(j + 1, i + 5, 15, 10);
+                        Mat checkLeft = new Mat(morphologyImage, new Rect(j - 15, i + 5, 14, 10));
+                        for (int rows = 0; rows < checkLeft.rows(); rows++) {
+                            for (int cols = 0; cols < checkLeft.cols(); cols++) {
+                                valueLeft = checkLeft.get(cols, rows)[0];
+                                if (valueLeft != 0) {
+                                    points.add(new Point(cols, rows));
+                                    mat.put(cols, rows, 0);
+                                    break; //Sprawdzić zakres, tzn. czy wywali mnie z jednego loopa czy ze wszystkich xD
+                                }
+                            }
+                        }
+
+                    } while (valueLeft == 0); //Zmienić value na wartość przypisywaną w tym do while
                 }
             }
         }
