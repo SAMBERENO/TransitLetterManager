@@ -63,7 +63,7 @@ public class ImagePreProcessingDeWarping {
     public List<MatOfPoint> findContours(String imagePath) {
         Mat source = medianBlur(imagePath);
         List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(source, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
+        Imgproc.findContours(source, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
         return contours;
     }
 
@@ -88,58 +88,81 @@ public class ImagePreProcessingDeWarping {
             Rect rect = Imgproc.boundingRect(contour);
             CenterOfRect rectCenter = new CenterOfRect(rect);
             rectangles.add(rectCenter);
-            //if (rect.width < 500 && rect.height < 150 && rect.width > 20 && rect.height > 10) Imgproc.rectangle(morphologyImage, rect.tl(), rect.br(), new Scalar(255, 0, 0), -1);
+            if (rect.width < 500 && rect.height < 150 && rect.width > 20 && rect.height > 10) Imgproc.rectangle(morphologyImage, rect.tl(), rect.br(), new Scalar(255, 0, 0), -1);
         }
 
         Mat mat = Mat.zeros(morphologyImage.rows(), morphologyImage.cols(), CvType.CV_8UC1);
         Mat marked = Mat.zeros(morphologyImage.rows(), morphologyImage.cols(), CvType.CV_8UC1);
 
         for (CenterOfRect rectangle : rectangles) {
-            mat.put((int) rectangle.center().x, (int) rectangle.center().y, 255);
+            mat.put((int) rectangle.center().y, (int) rectangle.center().x, 255);
         }
 
-        int xFromPrevPoint = 50;
-        int yFromPrevPoint = 10;
+        int xFromPrevPoint = 30;
+        int yFromPrevPoint = 5;
+
         List<List<Point>> spansList = new ArrayList<>();
         for (int i = 0; i < mat.rows(); i++) {
             for (int j = 0; j < mat.cols(); j++) {
                 boolean nextLoop = false;
                 double value = mat.get(i, j)[0];
-                double valueLeft = 0;
-                double valueRight = 0;
                 if (value != 0) {
                     List<Point> points = new ArrayList<>();
                     points.add(new Point(j, i)); //Zapisuje punkt startowy grupy do listy
-                    mat.put(j, i, 0);
+                    mat.put(i, j, 0);
                     do {
-                        Mat checkLeft = new Mat(morphologyImage, new Rect((int) points.getLast().x - xFromPrevPoint, (int) points.getLast().y - yFromPrevPoint, 50, 20)); //Rozmiary do sprawdzenia
+                        int getLastX = (int) points.getLast().x;
+                        int getLastY = (int) points.getLast().y;
+                        Mat checkLeft;
+                        try {
+                            checkLeft = new Mat(mat, new Rect(getLastX - xFromPrevPoint, getLastY - yFromPrevPoint, xFromPrevPoint, yFromPrevPoint * 2)); //Rozmiary do sprawdzenia
+                        } catch (Exception e) {
+                            checkLeft = new Mat(mat, new Rect(0, getLastY - yFromPrevPoint, getLastX, yFromPrevPoint * 2)); //Rozmiary do sprawdzenia
+                        }
+                        nextLoop = false;
                         checkLeft:
                         for (int rows = 0; rows < checkLeft.rows(); rows++) {
                             for (int cols = 0; cols < checkLeft.cols(); cols++) {
-                                valueLeft = checkLeft.get(rows, cols)[0];
+                                double valueLeft = checkLeft.get(rows, cols)[0];
                                 if (valueLeft != 0) {
-                                    points.add(new Point(points.getLast().x - xFromPrevPoint + rows, points.getLast().y - yFromPrevPoint + cols));
-                                    Imgproc.line(marked, points.getLast(), points.get(points.size() - 1), new Scalar(255, 0, 0), 3);
-                                    mat.put((int) points.getLast().x - xFromPrevPoint + rows, (int) points.getLast().y - yFromPrevPoint + cols, 0);
+                                    points.add(new Point(getLastX - xFromPrevPoint + cols, getLastY - yFromPrevPoint + rows));
+                                    mat.put(getLastY - yFromPrevPoint + rows, getLastX - xFromPrevPoint + cols, 0);
+                                    Imgproc.line(mat, points.getLast(), points.get(points.size() - 2), new Scalar(255, 0, 0), 10);
                                     nextLoop = true;
-                                    break checkLeft; //Sprawdzić zakres, tzn. czy wywali mnie z jednego loopa czy ze wszystkich xD
+                                    break checkLeft;
                                 }
-                                nextLoop = false;
                             }
                         }
 
                     } while (nextLoop);
-
+                    points.add(points.getFirst());
+                    points.removeFirst();
                     do {
-                        Mat checkRight = new Mat(morphologyImage, new Rect((int) points.getLast().x, (int) points.getLast().y - yFromPrevPoint, 50, 20)); //Rozmiary do sprawdzenia
+                        int getLastX = (int) points.getLast().x;
+                        int getLastY = (int) points.getLast().y;
+                        Mat checkRight;
+                            if (getLastY - yFromPrevPoint < 0 && getLastX + xFromPrevPoint >= mat.cols()) {
+                                checkRight = new Mat(mat, new Rect(getLastX, 0, xFromPrevPoint, yFromPrevPoint * 2 + (getLastY - yFromPrevPoint)));
+                            } else if (getLastX + xFromPrevPoint > mat.cols()){
+                                checkRight = new Mat(mat, new Rect(getLastX, getLastY - yFromPrevPoint, mat.cols() - getLastX, yFromPrevPoint * 2));
+                            } else if (getLastY - yFromPrevPoint < 0) {
+                                checkRight = new Mat(mat, new Rect(getLastX, 0, mat.cols() - getLastX, yFromPrevPoint * 2 + (getLastY - yFromPrevPoint)));
+                            } else {
+                                checkRight = new Mat(mat, new Rect(getLastX, getLastY - yFromPrevPoint, xFromPrevPoint, yFromPrevPoint * 2));
+                            }
                         checkRight:
-                        for (int rows = 0; rows < checkRight.rows(); rows++){
+                        for (int rows = 0; rows < checkRight.rows(); rows++) {
                             for (int cols = 0; cols < checkRight.cols(); cols++) {
-                                valueRight = checkRight.get(rows, cols)[0];
+                                double valueRight = checkRight.get(rows, cols)[0];
                                 if(valueRight != 0) {
-                                    points.add(new Point(points.getLast().x + rows, points.getLast().y - yFromPrevPoint + cols));
-                                    Imgproc.line(marked, points.getLast(), points.get(points.size() - 1), new Scalar(255, 0, 0), 10);
-                                    mat.put((int) points.getLast().x + rows, (int) points.getLast().y - yFromPrevPoint + cols, 0);
+                                    points.add(new Point(getLastX + cols, getLastY - yFromPrevPoint + rows));
+                                    mat.put(getLastY - yFromPrevPoint + rows, getLastX + cols, 0);
+                                    /*TODO: Rozkminić ten problem
+                                    The issue is clear. mat is CV_8UC1 (line 94). On line 161, mat.put(getLastY - yFromPrevPoint + rows, ...) — when getLastY - yFromPrevPoint < 0 (which is handled for the checkRight rect by clamping y to 0), the row passed to mat.put() can still be negative.
+                                    OpenCV's native nPutD throws "unknown exception" on out-of-bounds/negative coordinates.
+                                    The checkRight rect correctly starts at y=0 in those boundary cases, but the code still uses the un-clamped getLastY - yFromPrevPoint + rows when writing back to mat. The fix is to track the actual rect start y and use that.
+                                     */
+                                    Imgproc.line(mat, points.getLast(), points.get(points.size() - 2), new Scalar(255, 0, 0), 5);
                                     nextLoop = true;
                                     break checkRight;
                                 }
@@ -148,14 +171,16 @@ public class ImagePreProcessingDeWarping {
                         }
                     } while (nextLoop);
                     spansList.add(points);
-                    for (Point point : points){
-                        System.out.println(point);
-                    }
                 }
             }
         }
 
-
+        for (List<Point> points : spansList) {
+            System.out.println("Nowa grupa:");
+            for (Point point : points) {
+                System.out.println(point);
+            }
+        }
 
         Imgcodecs.imwrite("morphed.jpg", morphologyImage);
         Imgcodecs.imwrite("marked.jpg", marked);
