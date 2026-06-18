@@ -15,10 +15,7 @@ public class ImagePreProcessingDeWarping {
 
     public ImagePreProcessingDeWarping() {}
 
-    //TODO: Ta metoda najprawdopodobniej jest zbędna
-    private boolean isInRange(Point point0, Point point1){
-        return (point0.x + 40 >= point1.x || point0.x - 40 <= point1.x) && point0.y + 20 >= point1.y && point0.y - 20 <= point1.y;
-    }
+
 
     private Mat returnImage(String imagePath){
         return Imgcodecs.imread(imagePath);
@@ -81,6 +78,12 @@ public class ImagePreProcessingDeWarping {
     }
 
     public Mat morphologyDilation(String imagePath){
+        /*
+        TODO: Rozkminić ten problem by nie aktywować niepotrzebnie 2 razy tego samego pipelinea :3
+        Secondary (redundant work): morphologyDilation calls verticalLinesRemoval(imagePath) (line 81) AND findContours(imagePath) (line 82).
+        Each independently runs the full expensive pipeline (bilateralFilter → nlm → grayImage → binaryImage → medianBlur), allocating large Mat objects twice for the same image.
+        The fix for the OOM: draw the visualization lines on marked (the dedicated visualization matrix), not on mat.
+         */
         Mat morphologyImage = verticalLinesRemoval(imagePath);
         List<MatOfPoint> contours = findContours(imagePath);
         List<CenterOfRect> rectangles = new ArrayList<>();
@@ -92,14 +95,13 @@ public class ImagePreProcessingDeWarping {
         }
 
         Mat mat = Mat.zeros(morphologyImage.rows(), morphologyImage.cols(), CvType.CV_8UC1);
-        Mat marked = Mat.zeros(morphologyImage.rows(), morphologyImage.cols(), CvType.CV_8UC1);
 
         for (CenterOfRect rectangle : rectangles) {
             mat.put((int) rectangle.center().y, (int) rectangle.center().x, 255);
         }
 
-        int xFromPrevPoint = 30;
-        int yFromPrevPoint = 5;
+        int rectWidth = 50;
+        int rectHeight = 10;
 
         List<List<Point>> spansList = new ArrayList<>();
         for (int i = 0; i < mat.rows(); i++) {
@@ -113,24 +115,21 @@ public class ImagePreProcessingDeWarping {
                     do {
                         int getLastX = (int) points.getLast().x;
                         int getLastY = (int) points.getLast().y;
-                        Mat checkLeft;
-                        try {
-                            checkLeft = new Mat(mat, new Rect(getLastX - xFromPrevPoint, getLastY - yFromPrevPoint, xFromPrevPoint, yFromPrevPoint * 2)); //Rozmiary do sprawdzenia
-                        } catch (Exception e) {
-                            checkLeft = new Mat(mat, new Rect(0, getLastY - yFromPrevPoint, getLastX, yFromPrevPoint * 2)); //Rozmiary do sprawdzenia
-                        }
-                        nextLoop = false;
+                        int rectX = Math.min(getLastX, rectWidth);
+                        int rectPointY = Math.min(getLastY, rectHeight);
+                        int rectHeightY = Math.min(rectHeight * 2, mat.rows() - (getLastY - rectHeight));
+                        Mat checkLeft = new Mat(mat, new Rect(getLastX - rectX, getLastY - rectPointY, rectX, rectHeightY));
                         checkLeft:
                         for (int rows = 0; rows < checkLeft.rows(); rows++) {
                             for (int cols = 0; cols < checkLeft.cols(); cols++) {
                                 double valueLeft = checkLeft.get(rows, cols)[0];
                                 if (valueLeft != 0) {
-                                    points.add(new Point(getLastX - xFromPrevPoint + cols, getLastY - yFromPrevPoint + rows));
-                                    mat.put(getLastY - yFromPrevPoint + rows, getLastX - xFromPrevPoint + cols, 0);
-                                    Imgproc.line(mat, points.getLast(), points.get(points.size() - 2), new Scalar(255, 0, 0), 10);
+                                    points.add(new Point(getLastX - rectX + cols, getLastY - rectPointY + rows));
+                                    mat.put((int) points.getLast().y, (int) points.getLast().x, 0);
                                     nextLoop = true;
                                     break checkLeft;
                                 }
+                                nextLoop = false;
                             }
                         }
 
@@ -140,29 +139,17 @@ public class ImagePreProcessingDeWarping {
                     do {
                         int getLastX = (int) points.getLast().x;
                         int getLastY = (int) points.getLast().y;
-                        Mat checkRight;
-                            if (getLastY - yFromPrevPoint < 0 && getLastX + xFromPrevPoint >= mat.cols()) {
-                                checkRight = new Mat(mat, new Rect(getLastX, 0, xFromPrevPoint, yFromPrevPoint * 2 + (getLastY - yFromPrevPoint)));
-                            } else if (getLastX + xFromPrevPoint > mat.cols()){
-                                checkRight = new Mat(mat, new Rect(getLastX, getLastY - yFromPrevPoint, mat.cols() - getLastX, yFromPrevPoint * 2));
-                            } else if (getLastY - yFromPrevPoint < 0) {
-                                checkRight = new Mat(mat, new Rect(getLastX, 0, mat.cols() - getLastX, yFromPrevPoint * 2 + (getLastY - yFromPrevPoint)));
-                            } else {
-                                checkRight = new Mat(mat, new Rect(getLastX, getLastY - yFromPrevPoint, xFromPrevPoint, yFromPrevPoint * 2));
-                            }
+                        int rectX = Math.min(mat.cols() - getLastX, rectWidth);
+                        int rectPointY = Math.min(getLastY, rectHeight);
+                        int rectHeightY = Math.min(rectHeight * 2, mat.rows() - (getLastY - rectHeight));
+                        Mat checkRight = new Mat(mat, new Rect(getLastX, getLastY - rectPointY, rectX, rectHeightY));
                         checkRight:
                         for (int rows = 0; rows < checkRight.rows(); rows++) {
                             for (int cols = 0; cols < checkRight.cols(); cols++) {
                                 double valueRight = checkRight.get(rows, cols)[0];
                                 if(valueRight != 0) {
-                                    points.add(new Point(getLastX + cols, getLastY - yFromPrevPoint + rows));
-                                    mat.put(getLastY - yFromPrevPoint + rows, getLastX + cols, 0);
-                                    /*TODO: Rozkminić ten problem
-                                    The issue is clear. mat is CV_8UC1 (line 94). On line 161, mat.put(getLastY - yFromPrevPoint + rows, ...) — when getLastY - yFromPrevPoint < 0 (which is handled for the checkRight rect by clamping y to 0), the row passed to mat.put() can still be negative.
-                                    OpenCV's native nPutD throws "unknown exception" on out-of-bounds/negative coordinates.
-                                    The checkRight rect correctly starts at y=0 in those boundary cases, but the code still uses the un-clamped getLastY - yFromPrevPoint + rows when writing back to mat. The fix is to track the actual rect start y and use that.
-                                     */
-                                    Imgproc.line(mat, points.getLast(), points.get(points.size() - 2), new Scalar(255, 0, 0), 5);
+                                    points.add(new Point(getLastX + cols, getLastY - rectPointY + rows));
+                                    mat.put((int) points.getLast().y,(int) points.getLast().x, 0);
                                     nextLoop = true;
                                     break checkRight;
                                 }
@@ -181,9 +168,7 @@ public class ImagePreProcessingDeWarping {
                 System.out.println(point);
             }
         }
-
         Imgcodecs.imwrite("morphed.jpg", morphologyImage);
-        Imgcodecs.imwrite("marked.jpg", marked);
         return morphologyImage;
     }
 
