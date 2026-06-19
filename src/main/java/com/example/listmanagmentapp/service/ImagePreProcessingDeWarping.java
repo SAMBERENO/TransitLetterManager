@@ -15,11 +15,7 @@ public class ImagePreProcessingDeWarping {
 
     public ImagePreProcessingDeWarping() {}
 
-
-
-    private Mat returnImage(String imagePath){
-        return Imgcodecs.imread(imagePath);
-    }
+    private Mat returnImage(String imagePat){return Imgcodecs.imread(imagePat);}
 
     public Mat bilateralFilter(String imagePath){
         Mat image = returnImage(imagePath);
@@ -57,15 +53,15 @@ public class ImagePreProcessingDeWarping {
         return median;
     }
 
-    public List<MatOfPoint> findContours(String imagePath) {
-        Mat source = medianBlur(imagePath);
+    public List<MatOfPoint> findContours(Mat inputMat) {
+        Mat source = inputMat.clone();
         List<MatOfPoint> contours = new ArrayList<>();
         Imgproc.findContours(source, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
         return contours;
     }
 
-    public Mat verticalLinesRemoval(String imagePath){
-        Mat medianImage = medianBlur(imagePath);
+    public Mat verticalLinesRemoval(Mat inputMat){
+        Mat medianImage = inputMat.clone();
         Mat verticalKernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 40));
         Mat verticalMorphology = new Mat();
         Mat cleanedImage = new Mat();
@@ -78,29 +74,22 @@ public class ImagePreProcessingDeWarping {
     }
 
     public Mat morphologyDilation(String imagePath){
-        /*
-        TODO: Rozkminić ten problem by nie aktywować niepotrzebnie 2 razy tego samego pipelinea :3
-        Secondary (redundant work): morphologyDilation calls verticalLinesRemoval(imagePath) (line 81) AND findContours(imagePath) (line 82).
-        Each independently runs the full expensive pipeline (bilateralFilter → nlm → grayImage → binaryImage → medianBlur), allocating large Mat objects twice for the same image.
-        The fix for the OOM: draw the visualization lines on marked (the dedicated visualization matrix), not on mat.
-         */
-        Mat morphologyImage = verticalLinesRemoval(imagePath);
-        List<MatOfPoint> contours = findContours(imagePath);
+        Mat medianImage = medianBlur(imagePath);
+        List<MatOfPoint> contours = findContours(medianImage);
         List<CenterOfRect> rectangles = new ArrayList<>();
         for (MatOfPoint contour : contours) {
             Rect rect = Imgproc.boundingRect(contour);
             CenterOfRect rectCenter = new CenterOfRect(rect);
             rectangles.add(rectCenter);
-            if (rect.width < 500 && rect.height < 150 && rect.width > 20 && rect.height > 10) Imgproc.rectangle(morphologyImage, rect.tl(), rect.br(), new Scalar(255, 0, 0), -1);
         }
 
-        Mat mat = Mat.zeros(morphologyImage.rows(), morphologyImage.cols(), CvType.CV_8UC1);
+        Mat mat = Mat.zeros(medianImage.rows(), medianImage.cols(), CvType.CV_8UC1);
 
         for (CenterOfRect rectangle : rectangles) {
             mat.put((int) rectangle.center().y, (int) rectangle.center().x, 255);
         }
 
-        int rectWidth = 50;
+        int rectWidth = 60;
         int rectHeight = 10;
 
         List<List<Point>> spansList = new ArrayList<>();
@@ -110,7 +99,7 @@ public class ImagePreProcessingDeWarping {
                 double value = mat.get(i, j)[0];
                 if (value != 0) {
                     List<Point> points = new ArrayList<>();
-                    points.add(new Point(j, i)); //Zapisuje punkt startowy grupy do listy
+                    points.add(new Point(j, i));
                     mat.put(i, j, 0);
                     do {
                         int getLastX = (int) points.getLast().x;
@@ -132,8 +121,8 @@ public class ImagePreProcessingDeWarping {
                                 nextLoop = false;
                             }
                         }
-
                     } while (nextLoop);
+                    //points.add i points.removeFirst są po to by wrócić ponownie do punktu startowego i przejść w prawą stronę
                     points.add(points.getFirst());
                     points.removeFirst();
                     do {
@@ -157,30 +146,21 @@ public class ImagePreProcessingDeWarping {
                             }
                         }
                     } while (nextLoop);
-                    spansList.add(points);
+                    if (points.size() > 1)
+                        spansList.add(points);
                 }
             }
         }
-
         for (List<Point> points : spansList) {
             System.out.println("Nowa grupa:");
             for (Point point : points) {
+                Imgproc.circle(mat, point, 3, new Scalar(255, 0, 0), -1);
                 System.out.println(point);
             }
         }
-        Imgcodecs.imwrite("morphed.jpg", morphologyImage);
-        return morphologyImage;
+        Imgcodecs.imwrite("linie.jpg", mat);
+        return mat;
     }
-
-    /* TODO:
-    - Utworzenie Mat() z punktami w środku każdego prostokątu
-    - Pętla skacząca po każdej kolumnie i rzędzie w poszukiwaniu tych punktów
-    - Znaleziony punkt zostaje dodany do nowej kolekcji, a następnie wymazany z Mat()
-    - Od współrzędnych wymazanego punktu utworzyć prostokąt, który będzie polem do przeszukania kolejnych sąsiednich punktów
-    - Powtórzyć od 2 kroku dla mniejszego utworzonego prostokąta
-    - Jeśli pętla niczego już nie znajdzie w utworzonych prostokątach, należy wrócić do kroku 2 na pełnym Mat()
-     */
-
 
     public void saveImage(String imagePath) {
         Mat image = morphologyDilation(imagePath);
@@ -192,9 +172,9 @@ public class ImagePreProcessingDeWarping {
 1. --findContours / connectedComponents
 2. --boundingRect dla każdego elementu
 3. --policz odległości między elementami
-4. połącz bliskie elementy
-5. utwórz grupę (span)
-6. utwórz jeden duży bounding box dla grupy
+4. --połącz bliskie elementy
+5. --utwórz grupę (span)
+6. utwórz grupy do grupowania po wysokości/linii
      */
 
 }
