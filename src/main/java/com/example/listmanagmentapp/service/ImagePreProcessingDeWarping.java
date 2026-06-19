@@ -8,6 +8,7 @@ import org.opencv.photo.Photo;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -109,8 +110,8 @@ public class ImagePreProcessingDeWarping {
                         int rectHeightY = Math.min(rectHeight * 2, mat.rows() - (getLastY - rectHeight));
                         Mat checkLeft = new Mat(mat, new Rect(getLastX - rectX, getLastY - rectPointY, rectX, rectHeightY));
                         checkLeft:
-                        for (int rows = 0; rows < checkLeft.rows(); rows++) {
-                            for (int cols = 0; cols < checkLeft.cols(); cols++) {
+                        for (int rows = checkLeft.rows() - 1; rows > 0; rows--) {
+                            for (int cols = checkLeft.cols() - 1; cols > 0; cols--) {
                                 double valueLeft = checkLeft.get(rows, cols)[0];
                                 if (valueLeft != 0) {
                                     points.add(new Point(getLastX - rectX + cols, getLastY - rectPointY + rows));
@@ -152,13 +153,14 @@ public class ImagePreProcessingDeWarping {
             }
         }
         for (List<Point> points : spansList) {
+            points.sort(Comparator.comparingDouble(point -> point.x));
+            //Do debugowania
             System.out.println("Nowa grupa:");
             for (Point point : points) {
                 Imgproc.circle(mat, point, 3, new Scalar(255, 0, 0), -1);
                 System.out.println(point);
             }
         }
-        Imgcodecs.imwrite("linie.jpg", mat);
         return mat;
     }
 
