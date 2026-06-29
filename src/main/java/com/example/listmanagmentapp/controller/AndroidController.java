@@ -1,7 +1,7 @@
 package com.example.listmanagmentapp.controller;
 
 import com.example.listmanagmentapp.service.GoogleCloudVisionService;
-import com.example.listmanagmentapp.service.ImagePreProcessing;
+import com.example.listmanagmentapp.service.ImagePreProcessingDeWarping;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,10 +20,10 @@ public class AndroidController {
 
     private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ZdjeciaDoSkanowania/";
     private final LocalTime time = LocalTime.now();
-    private final ImagePreProcessing imagePreProcessing;
+    private final ImagePreProcessingDeWarping imagePreProcessing;
     private final GoogleCloudVisionService gcvs;
 
-    public AndroidController(ImagePreProcessing imagePreProcessing, GoogleCloudVisionService gcvs) {
+    public AndroidController(ImagePreProcessingDeWarping imagePreProcessing, GoogleCloudVisionService gcvs) {
         this.imagePreProcessing = imagePreProcessing;
         this.gcvs = gcvs;
     }
@@ -31,7 +31,7 @@ public class AndroidController {
     @PostMapping("/essunia")
     public ResponseEntity<?> essunia(@RequestParam("file") MultipartFile file) {
         try{
-            imagePreProcessing.straightenImage(addImage(file).getBody());
+            //imagePreProcessing.straightenImage(addImage(file).getBody());
             gcvs.getGoogleVisionResponse(gcvs.requestGoogleVision());
 
             //TODO: Dokończyć z odpowiednim zdjęciem

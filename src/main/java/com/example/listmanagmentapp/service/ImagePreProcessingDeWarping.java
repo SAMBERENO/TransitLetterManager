@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+//Cała klasa do wywalenia jeśli dostanę kody QR
+
 @Service
 public class ImagePreProcessingDeWarping {
 

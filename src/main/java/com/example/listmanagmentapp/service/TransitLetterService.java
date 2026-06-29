@@ -42,7 +42,7 @@ public class TransitLetterService {
             String pudla = "";
             for(int i = 0; i < 12; i++) {
                 if (rowInData < recordsJson.size()) {
-                if (recordsJson.get(rowInData).nrWyrobu().matches(".*//.*")) {
+                if (rowInData != 0 && recordsJson.get(rowInData).nrWyrobu().matches(recordsJson.get(rowInData - 1).nrWyrobu())) {
                     pudla = "," + pudla;
                 } else {
                     rowInExcel++;
@@ -55,7 +55,7 @@ public class TransitLetterService {
                 }
                 //TODO: Możliwe że będzie trzeba zmniejszyć zakres w StringBuilder().delete(0, 3) na .delete(0, 2)
                 //TODO: Rozkminić jak program ma wiedzieć czy numer pudła ma 1 czy 2 cyfry
-                pudla = new StringBuilder().append(recordsJson.get(rowInData).pudla()).delete(0, 2).append(pudla).toString();
+                pudla = new StringBuilder().append(recordsJson.get(rowInData).nrPudla()).append(pudla).toString();
                 sheet.getRow(rowInExcel).getCell(3).setCellValue(sumaDobrychUszczelek += recordsJson.get(rowInData).sumaUszczelek() - recordsJson.get(rowInData).sumaBrakow());
                 sheet.getRow(rowInExcel).getCell(4).setCellValue(sumaBrakow += recordsJson.get(rowInData).sumaBrakow());
                 sheet.getRow(rowInExcel).getCell(8).setCellValue(sumaNiezgodnosci += recordsJson.get(rowInData).niezgodnosci());

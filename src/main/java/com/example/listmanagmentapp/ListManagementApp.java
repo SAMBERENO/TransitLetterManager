@@ -1,9 +1,11 @@
 package com.example.listmanagmentapp;
 
-import com.example.listmanagmentapp.service.ImagePreProcessing;
-import com.example.listmanagmentapp.service.ImagePreProcessingDeWarping;
+import com.example.listmanagmentapp.config.DBConnectionConfig;
+import com.example.listmanagmentapp.service.ListsCreationOrganizerService;
+import com.example.listmanagmentapp.service.RecordsFetchService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootApplication
 public class ListManagementApp {
@@ -11,11 +13,13 @@ public class ListManagementApp {
     public static void main(String[] args) {
         SpringApplication.run(ListManagementApp.class, args);
 
-        //ImagePreProcessing imagePreProcessing = new ImagePreProcessing();
+        ListsCreationOrganizerService listsCreationOrganizerService = new ListsCreationOrganizerService(new DBConnectionConfig(), new ObjectMapper());
 
-        ImagePreProcessingDeWarping imagePreProcessing = new ImagePreProcessingDeWarping();
+        listsCreationOrganizerService.createLists();
 
-        imagePreProcessing.saveImage("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\croppedTest.jpg");
+        //ImagePreProcessingDeWarping imagePreProcessing = new ImagePreProcessingDeWarping();
+
+        //imagePreProcessing.saveImage("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\croppedTest.jpg");
 
         //GoogleCloudVisionService andek = new GoogleCloudVisionService();
 

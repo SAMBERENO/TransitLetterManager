@@ -1,10 +1,11 @@
 package com.example.listmanagmentapp.dto;
 
 public record RecordsJson(
-        String pudla,
+        String zmiana,
+        String nrPudla,
         String nrWyrobu,
         String nrZlecenia,
-        String dataOdbioru,
+        String dataProdukcji,
         int sumaUszczelek,
         int sumaBrakow,
         int niezgodnosci,

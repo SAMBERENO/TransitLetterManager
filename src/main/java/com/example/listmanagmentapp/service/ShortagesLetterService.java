@@ -25,8 +25,7 @@ public class ShortagesLetterService {
 
     public XSSFWorkbook createShortagesLetter(){
         try(FileInputStream fin = new FileInputStream(inputPath + "FormatkaRuchyBrakow.xlsx")){
-            XSSFWorkbook workbook = new XSSFWorkbook(fin);
-            return workbook;
+            return new XSSFWorkbook(fin);
         } catch (IOException e) {
             System.out.println("RuchyBrakow IO Blad: " + e.getMessage());
         } return null;
@@ -38,26 +37,14 @@ public class ShortagesLetterService {
             List<RecordsJson> recordsJson = recordsFetchService.fromDBtoDto();
             int rowInData = 0;
             int rowInExcel = 6;
-            String pudla = "";
-            String[] powtorki = new String[3];
             for(int i = 0; i < 26; i++) {
                 if(rowInData < recordsJson.size()) {
                     int excelDamagedCell = 7;
-                    rowInExcel+=2;
-                    if (recordsJson.get(rowInData).nrWyrobu().matches(".*//.*")) {
-                        sheet.getRow(rowInExcel).getCell(1).setCellValue(powtorki[0]);
-                        sheet.getRow(rowInExcel).getCell(2).setCellValue(powtorki[1]);
-                        sheet.getRow(rowInExcel).getCell(3).setCellValue(powtorki[2]);
-                    } else {
-                        sheet.getRow(rowInExcel).getCell(1).setCellValue(recordsJson.get(rowInData).nrZlecenia());
-                        sheet.getRow(rowInExcel).getCell(2).setCellValue(recordsJson.get(rowInData).nrWyrobu());
-                        sheet.getRow(rowInExcel).getCell(3).setCellValue(recordsJson.get(rowInData).dataOdbioru());
-                        powtorki[0] = recordsJson.get(rowInData).nrZlecenia();
-                        powtorki[1] = recordsJson.get(rowInData).nrWyrobu();
-                        powtorki[2] = recordsJson.get(rowInData).dataOdbioru();
-                    }
-                    pudla = String.valueOf(recordsJson.get(rowInData).pudla().charAt(0));
-                    sheet.getRow(rowInExcel).getCell(0).setCellValue(pudla);
+                    rowInExcel += 2;
+                    sheet.getRow(rowInExcel).getCell(0).setCellValue(recordsJson.get(rowInData).zmiana());
+                    sheet.getRow(rowInExcel).getCell(1).setCellValue(recordsJson.get(rowInData).nrZlecenia());
+                    sheet.getRow(rowInExcel).getCell(2).setCellValue(recordsJson.get(rowInData).nrWyrobu());
+                    sheet.getRow(rowInExcel).getCell(3).setCellValue(recordsJson.get(rowInData).dataProdukcji());
                     sheet.getRow(rowInExcel).getCell(5).setCellValue(recordsJson.get(rowInData).sumaUszczelek());
                     for(Integer e : recordsJson.get(rowInData).braki().getValues())
                     {
@@ -84,19 +71,11 @@ public class ShortagesLetterService {
             List<RecordsJson> recordsJson = recordsFetchService.fromDBtoDto();
             int rowInData = 0;
             int rowInExcel = 6;
-            String pudla = "";
-            String powtorka = "";
             for(int i = 0; i < 26; i++) {
                 if(rowInData < recordsJson.size()) {
                     int excelDamagedCell = 5;
-                    rowInExcel+=2;
-
-                    if (recordsJson.get(rowInData).nrZlecenia().matches(".*//.*")) {
-                        pudla = new StringBuilder().append(powtorka).append("$").append(recordsJson.get(rowInData).pudla()).delete(8, 10).toString();
-                    } else {
-                        pudla = new StringBuilder().append(recordsJson.get(rowInData).nrZlecenia()).append("$").append(recordsJson.get(rowInData).pudla()).delete(8, 10).toString();
-                        powtorka = recordsJson.get(rowInData).nrZlecenia();
-                    }
+                    rowInExcel += 2;
+                        String pudla = new StringBuilder().append(recordsJson.get(rowInData).nrZlecenia()).append("$").append(recordsJson.get(rowInData).nrPudla()).toString();
                     sheet.getRow(rowInExcel).getCell(0).setCellValue(pudla);
                     for(Integer e : recordsJson.get(rowInData).braki().getValues())
                     {
