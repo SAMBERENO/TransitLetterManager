@@ -1,46 +1,52 @@
 package com.example.listmanagmentapp.controller;
 
-import com.example.listmanagmentapp.service.GoogleCloudVisionService;
-import com.example.listmanagmentapp.service.ImagePreProcessingDeWarping;
+import com.example.listmanagmentapp.config.DbRepository;
+import com.example.listmanagmentapp.dto.RecordsJson;
+import com.example.listmanagmentapp.service.ListsCreationOrganizerService;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.time.LocalTime;
 
 @RequestMapping("/android")
 @RestController
 public class AndroidController {
 
+    private final DbRepository dbRepository = new DbRepository();
     private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ZdjeciaDoSkanowania/";
     private final LocalTime time = LocalTime.now();
-    private final ImagePreProcessingDeWarping imagePreProcessing;
-    private final GoogleCloudVisionService gcvs;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ListsCreationOrganizerService listsCreationOrganizerService = new ListsCreationOrganizerService();
 
-    public AndroidController(ImagePreProcessingDeWarping imagePreProcessing, GoogleCloudVisionService gcvs) {
-        this.imagePreProcessing = imagePreProcessing;
-        this.gcvs = gcvs;
-    }
+    public AndroidController() {}
 
-    @PostMapping("/essunia")
-    public ResponseEntity<?> essunia(@RequestParam("file") MultipartFile file) {
-        try{
-            //imagePreProcessing.straightenImage(addImage(file).getBody());
-            gcvs.getGoogleVisionResponse(gcvs.requestGoogleVision());
-
-            //TODO: Dokończyć z odpowiednim zdjęciem
-
-            return ResponseEntity.ok("OK");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    @PostMapping("/dodajJson")
+    public ResponseEntity<?> addJson(@RequestBody String json) {
+        try(Connection connection = dbRepository.dbConnection();
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO DaneJson (json) VALUES (?)")) {
+            ps.setQueryTimeout(10);
+            objectMapper.readValue(json, RecordsJson.class);
+            ps.setString(1, json);
+            ps.executeUpdate();
+            return ResponseEntity.ok("Dodano");
+        } catch (JsonMappingException | JsonParseException e) {
+            return ResponseEntity.badRequest().body("Blad z walidacją Json'a: " + e.getMessage());
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body("Blad: " + e.getMessage());
         }
     }
+
+
+
 
     //@PostMapping("/dodajZdjecie")
     public ResponseEntity<String> addImage(@RequestParam("file") MultipartFile file) {

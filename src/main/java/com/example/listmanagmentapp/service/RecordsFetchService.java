@@ -1,6 +1,6 @@
 package com.example.listmanagmentapp.service;
 
-import com.example.listmanagmentapp.config.DBConnectionConfig;
+import com.example.listmanagmentapp.config.DbRepository;
 import com.example.listmanagmentapp.dto.RecordsJson;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
@@ -15,17 +15,17 @@ import java.util.List;
 @Service
 public class RecordsFetchService {
 
-    public final DBConnectionConfig dbConnectionConfig;
+    public final DbRepository dbRepository;
     private final ObjectMapper objectMapper;
 
-    public RecordsFetchService(DBConnectionConfig dbConnectionConfig, ObjectMapper objectMapper) {
+    public RecordsFetchService(DbRepository dbRepository, ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-        this.dbConnectionConfig = dbConnectionConfig;
+        this.dbRepository = dbRepository;
     }
 
     public List<RecordsJson> fromDBtoDto() {
         List<RecordsJson> recordsJson = new ArrayList<>();
-        try (Connection connection = dbConnectionConfig.dbConnection();
+        try (Connection connection = dbRepository.dbConnection();
              Statement statement = connection.createStatement();
              ResultSet rs = statement.executeQuery("SELECT json FROM DaneJson")) {
             while (rs.next()) {

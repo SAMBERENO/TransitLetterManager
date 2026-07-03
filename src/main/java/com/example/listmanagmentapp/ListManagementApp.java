@@ -1,8 +1,7 @@
 package com.example.listmanagmentapp;
 
-import com.example.listmanagmentapp.config.DBConnectionConfig;
+import com.example.listmanagmentapp.config.DbRepository;
 import com.example.listmanagmentapp.service.ListsCreationOrganizerService;
-import com.example.listmanagmentapp.service.RecordsFetchService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import tools.jackson.databind.ObjectMapper;
@@ -13,7 +12,7 @@ public class ListManagementApp {
     public static void main(String[] args) {
         SpringApplication.run(ListManagementApp.class, args);
 
-        ListsCreationOrganizerService listsCreationOrganizerService = new ListsCreationOrganizerService(new DBConnectionConfig(), new ObjectMapper());
+        ListsCreationOrganizerService listsCreationOrganizerService = new ListsCreationOrganizerService();
 
         listsCreationOrganizerService.createLists();
 
@@ -25,7 +24,11 @@ public class ListManagementApp {
 
         //System.out.println(andek.getGoogleVisionResponse(andek.requestGoogleVision()));
 
-        //TODO: Zmienić argument w AndroidController.getEncodedImage() na return of addImage
+        /*TODO: na następny raz:
+
+        - zmienić DbRepository
+
+         */
 
     }
 

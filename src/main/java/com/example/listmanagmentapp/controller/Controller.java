@@ -1,15 +1,11 @@
 package com.example.listmanagmentapp.controller;
 
-import com.example.listmanagmentapp.config.DBConnectionConfig;
+import com.example.listmanagmentapp.config.DbRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.sql.*;
-import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,19 +23,19 @@ public class Controller {
         - Kontroler do live testowania działania aplikacji(połączeń i stanu)
      */
 
-    private final DBConnectionConfig dbConnectionConfig;
+    private final DbRepository dbRepository;
     private final ObjectMapper objectMapper;
 
 
-    public Controller(DBConnectionConfig dbConnectionConfig, ObjectMapper objectMapper) {
-        this.dbConnectionConfig = dbConnectionConfig;
+    public Controller(DbRepository dbRepository, ObjectMapper objectMapper) {
+        this.dbRepository = dbRepository;
         this.objectMapper = objectMapper;
     }
 
     @GetMapping("/odczyt")
     public Map<Integer, String> read() {
         Map<Integer, String> list = new HashMap<>();
-        try(Connection connection = dbConnectionConfig.dbConnection();
+        try(Connection connection = dbRepository.dbConnection();
             Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery("SELECT * FROM DaneJson")){
             statement.setQueryTimeout(10);
@@ -55,7 +51,7 @@ public class Controller {
     //TODO: ustawić zabezpieczenia przed niechcianym usunięciem plików przez kogoś nieproszonego
     @DeleteMapping("/usun")
     public ResponseEntity<?> deleteAll(){
-        try(Connection connection = dbConnectionConfig.dbConnection();
+        try(Connection connection = dbRepository.dbConnection();
             Statement statement = connection.createStatement()){
             statement.setQueryTimeout(10);
             connection.setAutoCommit(false);
@@ -72,11 +68,7 @@ public class Controller {
         }
     }
 
-    //TODO: ustawić zabezpieczenia niedopuszczające osób trzecich do dodawania pozycji
-    @PostMapping("/dodajJson")
-    public void add(@RequestBody String json) {
-        addSafeQuery(json);
-    }
+
 
     //TODO: ustawić zabezpieczenia przed niechcianym usunięciem plików przez kogoś nieproszonego
     @DeleteMapping("/usun/{wpis}")
@@ -85,8 +77,8 @@ public class Controller {
     }
 
     private ResponseEntity<?> deleteSafeQuery(int wpis) {
-        try(Connection connection = dbConnectionConfig.dbConnection();
-             PreparedStatement ps = connection.prepareStatement("DELETE FROM DaneJson WHERE id = ?")) {
+        try(Connection connection = dbRepository.dbConnection();
+            PreparedStatement ps = connection.prepareStatement("DELETE FROM DaneJson WHERE id = ?")) {
             ps.setQueryTimeout(10);
             ps.setInt(1, wpis);
             if(ps.executeUpdate() == 0){
@@ -98,8 +90,16 @@ public class Controller {
         }
     }
 
+    //Do usunięcia po wdrożeniu AndroidController.java
+    //TODO: ustawić zabezpieczenia niedopuszczające osób trzecich do dodawania pozycji
+    @PostMapping("/dodajJson")
+    public void add(@RequestBody String json) {
+        addSafeQuery(json);
+    }
+
+    //Do usunięcia po wdrożeniu AndroidController.java
     private ResponseEntity<?> addSafeQuery(String json) {
-        try(Connection connection = dbConnectionConfig.dbConnection();
+        try(Connection connection = dbRepository.dbConnection();
             PreparedStatement ps = connection.prepareStatement("INSERT INTO DaneJson (json) VALUES (?)")){
             ps.setQueryTimeout(10);
             objectMapper.readTree(json);

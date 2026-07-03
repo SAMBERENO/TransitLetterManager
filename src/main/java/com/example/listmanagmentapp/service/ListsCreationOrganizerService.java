@@ -1,6 +1,6 @@
 package com.example.listmanagmentapp.service;
 
-import com.example.listmanagmentapp.config.DBConnectionConfig;
+import com.example.listmanagmentapp.config.DbRepository;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
@@ -11,15 +11,11 @@ public class ListsCreationOrganizerService {
         - CodeReview dla tej klasy/klas serwisowych
      */
 
-    private final RecordsFetchService recordsFetchService;
-    private final TransitLetterService transitLetterService;
-    private final ShortagesLetterService shortagesLetterService;
+    private final RecordsFetchService recordsFetchService = new RecordsFetchService(new DbRepository(), new ObjectMapper());
+    private final TransitLetterService transitLetterService = new TransitLetterService(recordsFetchService);
+    private final ShortagesLetterService shortagesLetterService = new ShortagesLetterService(recordsFetchService);
 
-    public ListsCreationOrganizerService(DBConnectionConfig dbConnectionConfig, ObjectMapper objectMapper){
-        this.recordsFetchService = new RecordsFetchService(dbConnectionConfig, objectMapper);
-        this.transitLetterService = new TransitLetterService(recordsFetchService);
-        this.shortagesLetterService = new ShortagesLetterService(recordsFetchService);
-    }
+    public ListsCreationOrganizerService(){}
 
     public void createLists(){
         transitLetterService.createTransitLetter();

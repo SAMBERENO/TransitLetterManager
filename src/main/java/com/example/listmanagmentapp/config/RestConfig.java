@@ -6,10 +6,8 @@ import org.springframework.web.client.RestClient;
 
 @Configuration
 public class RestConfig {
-
     @Bean
-    public RestClient RestConfig() {
+    public RestClient restConfig() {
         return RestClient.create();
     }
-
 }
