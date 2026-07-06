@@ -1,5 +1,6 @@
 package com.example.listmanagmentapp.service;
 
+import com.example.listmanagmentapp.config.DbRepository;
 import com.example.listmanagmentapp.dto.RecordsJson;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -14,13 +15,13 @@ import java.util.List;
 @Service
 public class ShortagesLetterService {
 
-    private final RecordsFetchService recordsFetchService;
+    private final DbRepository dbRepository;
     private final String inputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/CzysteArkuszeExcel/";
     private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ExeleDoTestow/";
     private final LocalDate date = LocalDate.now();
 
-    public ShortagesLetterService(RecordsFetchService recordsFetchService){
-        this.recordsFetchService = recordsFetchService;
+    public ShortagesLetterService(DbRepository dbRepository){
+        this.dbRepository = dbRepository;
     }
 
     public XSSFWorkbook createShortagesLetter(){
@@ -34,7 +35,7 @@ public class ShortagesLetterService {
     public XSSFWorkbook createShortagesLetterInsiders(){
         try{XSSFWorkbook workbook = createShortagesLetter();
             Sheet sheet = workbook.getSheetAt(0);
-            List<RecordsJson> recordsJson = recordsFetchService.fromDBtoDto();
+            List<RecordsJson> recordsJson = dbRepository.readJson();
             int rowInData = 0;
             int rowInExcel = 6;
             for(int i = 0; i < 26; i++) {
@@ -68,7 +69,7 @@ public class ShortagesLetterService {
     public XSSFWorkbook createShortagesLetterOutsiders(){
         try {XSSFWorkbook workbook = createShortagesLetterInsiders();
             Sheet sheet = workbook.getSheetAt(1);
-            List<RecordsJson> recordsJson = recordsFetchService.fromDBtoDto();
+            List<RecordsJson> recordsJson = dbRepository.readJson();
             int rowInData = 0;
             int rowInExcel = 6;
             for(int i = 0; i < 26; i++) {
@@ -95,7 +96,7 @@ public class ShortagesLetterService {
         } return null;
     }
 
-    public void builtLetter(){
+    public void buildLetter(){
         try(XSSFWorkbook workbook = createShortagesLetterOutsiders();
             FileOutputStream fout = new FileOutputStream(outputPath + "Braki " + date + ".xlsx")){
             workbook.setForceFormulaRecalculation(true);

@@ -1,10 +1,12 @@
 package com.example.listmanagmentapp.controller;
 
 import com.example.listmanagmentapp.config.DbRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tools.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +35,15 @@ public class Controller {
     }
 
     @GetMapping("/odczyt")
-    public Map<Integer, String> read() {
+    public ResponseEntity<?> read() {
+        try {
+            Map<Integer, String> map = dbRepository.readAll();
+            return new ResponseEntity<>(map, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+        /*
         Map<Integer, String> list = new HashMap<>();
         try(Connection connection = dbRepository.dbConnection();
             Statement statement = connection.createStatement();
@@ -46,8 +56,8 @@ public class Controller {
             System.out.println(e.getMessage());
         }
         return list;
-    }
-
+    }*/
+/*
     //TODO: ustawić zabezpieczenia przed niechcianym usunięciem plików przez kogoś nieproszonego
     @DeleteMapping("/usun")
     public ResponseEntity<?> deleteAll(){
@@ -110,4 +120,5 @@ public class Controller {
             return ResponseEntity.badRequest().body("Blad: " + e.getMessage());
         }
     }
+    */
 }

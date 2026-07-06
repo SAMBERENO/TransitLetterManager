@@ -3,6 +3,8 @@ package com.example.listmanagmentapp.model;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 
+//Do usunięcia najprawdopodobniej
+
 public class CenterOfRect {
 
     private final Rect rect;

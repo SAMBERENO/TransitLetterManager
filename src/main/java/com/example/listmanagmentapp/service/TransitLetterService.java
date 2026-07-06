@@ -1,5 +1,6 @@
 package com.example.listmanagmentapp.service;
 
+import com.example.listmanagmentapp.config.DbRepository;
 import com.example.listmanagmentapp.dto.RecordsJson;
 import org.apache.poi.ooxml.POIXMLException;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -17,13 +18,13 @@ import java.util.List;
 @Service
 public class TransitLetterService {
 
-    private final RecordsFetchService recordsFetchService;
+    private final DbRepository dbRepository;
     private final String inputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/CzysteArkuszeExcel/";
     private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ExeleDoTestow/";
     private final LocalDate date = LocalDate.now();
 
-    public TransitLetterService(RecordsFetchService recordsFetchService){
-        this.recordsFetchService = recordsFetchService;
+    public TransitLetterService(DbRepository dbRepository){
+        this.dbRepository = dbRepository;
     }
 
     public void createTransitLetter(){
@@ -33,7 +34,7 @@ public class TransitLetterService {
 
             Sheet sheet = workbook.getSheetAt(0);
 
-            List<RecordsJson> recordsJson = recordsFetchService.fromDBtoDto();
+            List<RecordsJson> recordsJson = dbRepository.readJson();
             int rowInData = 0;
             int rowInExcel = 16;
             int sumaDobrychUszczelek = 0;

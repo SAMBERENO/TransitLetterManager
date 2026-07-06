@@ -13,6 +13,4 @@ public class ResponseTestController {
     public ResponseEntity<String> test(){
         return ResponseEntity.ok("Połączenie aktywne");
     }
-
-
 }

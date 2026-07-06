@@ -19,7 +19,11 @@ public class GoogleCloudVisionService {
     private final String targetUrl = "https://vision.googleapis.com/v1/images:annotate?key=";
     private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ZdjeciaDoSkanowania/";
     private final ImagePreProcessingDeWarping imagePreProcessing = new ImagePreProcessingDeWarping();
-    private final AndroidController androidController = new AndroidController();
+    private final AndroidController androidController;
+
+    public GoogleCloudVisionService(AndroidController androidController) {
+        this.androidController = androidController;
+    }
 
     public HttpURLConnection requestGoogleVision(){
         try{
