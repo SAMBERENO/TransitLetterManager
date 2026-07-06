@@ -3,7 +3,6 @@ package com.example.listmanagmentapp.controller;
 import com.example.listmanagmentapp.config.DbRepository;
 import com.example.listmanagmentapp.dto.RecordsJson;
 import com.example.listmanagmentapp.service.ListsCreationOrganizerService;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.PreparedStatement;
 import java.time.LocalTime;
-import java.util.Map;
 
 @RequestMapping("/android")
 @RestController
@@ -60,6 +57,26 @@ public class AndroidController {
             return ResponseEntity.ok("Dodano Json");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Błąd: "  + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/usun")
+    public ResponseEntity<?> deleteAll() {
+        try {
+            dbRepository.deleteAll();
+            return ResponseEntity.ok("Usunięto wszystkie wpisy");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Błąd: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/usun/{id}")
+    public ResponseEntity<?> deleteById(@PathVariable int id) {
+        try {
+            dbRepository.deleteOne(id);
+            return ResponseEntity.ok("Usunięto wpis");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Błąd: " + e.getMessage());
         }
     }
 

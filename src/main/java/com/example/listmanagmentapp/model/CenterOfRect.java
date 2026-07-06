@@ -3,7 +3,7 @@ package com.example.listmanagmentapp.model;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 
-//Do usunięcia najprawdopodobniej
+//Do usunięcia kiedy potwierdzą udostępnienie kodów QR
 
 public class CenterOfRect {
 

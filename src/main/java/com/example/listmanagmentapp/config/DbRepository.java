@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
 
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,5 +46,15 @@ public class DbRepository {
         String query = "INSERT INTO DaneJson (json) VALUES (?)";
         objectMapper.readValue(json, RecordsJson.class);
         jdbcTemplate.update(query, json);
+    }
+
+    public void deleteAll() {
+        String query = "DELETE FROM DaneJson";
+        jdbcTemplate.update(query);
+    }
+
+    public void deleteOne(int id) {
+        String query = "DELETE FROM DaneJson WHERE id=?";
+        jdbcTemplate.update(query, id);
     }
 }
