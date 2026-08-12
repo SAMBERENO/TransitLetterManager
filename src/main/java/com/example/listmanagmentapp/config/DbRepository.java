@@ -42,6 +42,14 @@ public class DbRepository {
         });
     }
 
+    public int dbRecordsCount() {
+        String query = "SELECT count(*) FROM DaneJson";
+        return jdbcTemplate.query(query, e -> {
+            e.next();
+            return e.getInt(1);
+        });
+    }
+
     public void addJson(String json) {
         String query = "INSERT INTO DaneJson (json) VALUES (?)";
         objectMapper.readValue(json, RecordsJson.class);
