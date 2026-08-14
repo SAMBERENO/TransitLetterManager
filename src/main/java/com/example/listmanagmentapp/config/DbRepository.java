@@ -31,6 +31,16 @@ public class DbRepository {
         });
     }
 
+    public String getJsonByID(String nrZleceniaiPudla) {
+        String query = "SELECT * FROM DaneJson WHERE nrZlecenia = ?";
+        return jdbcTemplate.query(query, e -> {
+            if (e.next()) {
+                return e.getString("json");
+            }
+            return null;
+        }, nrZleceniaiPudla);
+    }
+
     public List<RecordsJson> readJson() {
         String query = "SELECT json FROM DaneJson";
         return jdbcTemplate.query(query, e -> {

@@ -39,6 +39,15 @@ public class AndroidController {
         }
     }
 
+    @GetMapping("/getJsonByID")
+    public String getJsonByID(@RequestParam String nrZleceniaiPudla) {
+        try {
+            return dbRepository.getJsonByID(nrZleceniaiPudla);
+        } catch (Exception e) {
+            return "Błąd: " + e.getMessage();
+        }
+    }
+
     @GetMapping("/createLists")
     public ResponseEntity<?> createLists() {
         try {
