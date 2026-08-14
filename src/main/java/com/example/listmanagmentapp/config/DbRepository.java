@@ -51,9 +51,9 @@ public class DbRepository {
     }
 
     public void addJson(String json) {
-        String query = "INSERT INTO DaneJson (json) VALUES (?)";
-        objectMapper.readValue(json, RecordsJson.class);
-        jdbcTemplate.update(query, json);
+        String query = "INSERT INTO DaneJson (nrZlecenia, json) VALUES (?, ?)";
+        RecordsJson nrZleceniaiPudla = objectMapper.readValue(json, RecordsJson.class);
+        jdbcTemplate.update(query, nrZleceniaiPudla.nrZleceniaiPudla(), json);
     }
 
     public void deleteAll() {
@@ -61,7 +61,7 @@ public class DbRepository {
         jdbcTemplate.update(query);
     }
 
-    public void deleteOne(int id) {
+    public void deleteOne(String id) {
         String query = "DELETE FROM DaneJson WHERE id=?";
         jdbcTemplate.update(query, id);
     }

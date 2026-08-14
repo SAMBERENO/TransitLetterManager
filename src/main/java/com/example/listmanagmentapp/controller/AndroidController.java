@@ -71,7 +71,7 @@ public class AndroidController {
     }
 
     @DeleteMapping("/usun/{id}")
-    public ResponseEntity<?> deleteById(@PathVariable int id) {
+    public ResponseEntity<?> deleteById(@PathVariable String id) {
         try {
             dbRepository.deleteOne(id);
             return ResponseEntity.ok("Usunięto wpis");

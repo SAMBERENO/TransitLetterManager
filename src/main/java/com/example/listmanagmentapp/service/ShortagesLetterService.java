@@ -43,7 +43,9 @@ public class ShortagesLetterService {
                     int excelDamagedCell = 7;
                     rowInExcel += 2;
                     sheet.getRow(rowInExcel).getCell(0).setCellValue(recordsJson.get(rowInData).zmiana());
-                    sheet.getRow(rowInExcel).getCell(1).setCellValue(recordsJson.get(rowInData).nrZlecenia());
+                    String nrZleceniaiPudla = recordsJson.get(rowInData).nrZleceniaiPudla();
+                    String[] nrZlecenia = nrZleceniaiPudla.split("[$]");
+                    sheet.getRow(rowInExcel).getCell(1).setCellValue(nrZlecenia[0]);
                     sheet.getRow(rowInExcel).getCell(2).setCellValue(recordsJson.get(rowInData).nrWyrobu());
                     sheet.getRow(rowInExcel).getCell(3).setCellValue(recordsJson.get(rowInData).dataProdukcji());
                     sheet.getRow(rowInExcel).getCell(5).setCellValue(recordsJson.get(rowInData).sumaUszczelek());
@@ -76,8 +78,7 @@ public class ShortagesLetterService {
                 if(rowInData < recordsJson.size()) {
                     int excelDamagedCell = 5;
                     rowInExcel += 2;
-                        String pudla = new StringBuilder().append(recordsJson.get(rowInData).nrZlecenia()).append("$").append(recordsJson.get(rowInData).nrPudla()).toString();
-                    sheet.getRow(rowInExcel).getCell(0).setCellValue(pudla);
+                    sheet.getRow(rowInExcel).getCell(0).setCellValue(recordsJson.get(rowInData).nrZleceniaiPudla());
                     for(Integer e : recordsJson.get(rowInData).braki().getValues())
                     {
                         if (e != 0) {
