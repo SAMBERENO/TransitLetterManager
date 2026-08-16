@@ -42,7 +42,7 @@ public class ShortagesLetterService {
                 if(rowInData < recordsJson.size()) {
                     int excelDamagedCell = 7;
                     rowInExcel += 2;
-                    sheet.getRow(rowInExcel).getCell(0).setCellValue(recordsJson.get(rowInData).zmiana());
+                    sheet.getRow(rowInExcel).getCell(0).setCellValue(String.valueOf(recordsJson.get(rowInData).zmiana()));
                     String nrZleceniaiPudla = recordsJson.get(rowInData).nrZleceniaiPudla();
                     String[] nrZlecenia = nrZleceniaiPudla.split("[$]");
                     sheet.getRow(rowInExcel).getCell(1).setCellValue(nrZlecenia[0]);

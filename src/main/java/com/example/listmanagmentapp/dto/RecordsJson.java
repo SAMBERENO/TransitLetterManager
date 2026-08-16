@@ -2,7 +2,6 @@ package com.example.listmanagmentapp.dto;
 
 public record RecordsJson(
         char zmiana,
-
         String nrWyrobu,
         String nrZleceniaiPudla,
         String dataProdukcji,
