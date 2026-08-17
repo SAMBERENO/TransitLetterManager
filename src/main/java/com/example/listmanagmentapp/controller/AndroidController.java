@@ -59,6 +59,16 @@ public class AndroidController {
         }
     }
 
+    @PostMapping("addJsonFromAndroid")
+    public ResponseEntity<?> addJsonFromAndroid(@RequestBody String json) {
+        try {
+            dbRepository.addJsonFromAndroid(json);
+            return ResponseEntity.ok("Dodano pozycje");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Błąd: "  + e.getMessage());
+        }
+    }
+
     @PostMapping("/addJson")
     public ResponseEntity<?> addJson(@RequestBody String json) {
         try {

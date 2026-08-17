@@ -1,5 +1,6 @@
 package com.example.listmanagmentapp.config;
 
+import com.example.listmanagmentapp.dto.JsonFromAndroid;
 import com.example.listmanagmentapp.dto.RecordsJson;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -58,6 +59,15 @@ public class DbRepository {
             e.next();
             return e.getInt(1);
         });
+    }
+
+    public void addJsonFromAndroid(String json){
+        String query = "INSERT INTO DaneJson (nrZlecenia, json) VALUES (?, ?)";
+        JsonFromAndroid jsonFromAndroid = objectMapper.readValue(json, JsonFromAndroid.class);
+        for (RecordsJson recordsJson : jsonFromAndroid.rekordy()) {
+            String jsonString = objectMapper.writeValueAsString(recordsJson);
+            jdbcTemplate.update(query, recordsJson.nrZleceniaiPudla(), jsonString);
+        }
     }
 
     public void addJson(String json) {
