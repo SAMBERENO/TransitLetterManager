@@ -51,8 +51,12 @@ public class AndroidController {
     @GetMapping("/createLists")
     public ResponseEntity<?> createLists() {
         try {
-            listsCreationOrganizerService.createLists();
-            return ResponseEntity.ok("Utworzono liste");
+            if (dbRepository.dbRecordsCount() > 0) {
+                listsCreationOrganizerService.createLists();
+                return ResponseEntity.ok("Utworzono liste");
+            }
+            else
+                return ResponseEntity.ok("Brak pozycji w bazie danych!");
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.badRequest().body("Błąd: " + e.getMessage());
