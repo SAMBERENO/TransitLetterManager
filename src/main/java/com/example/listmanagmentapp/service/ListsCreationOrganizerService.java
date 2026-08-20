@@ -5,10 +5,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ListsCreationOrganizerService {
 
-    /* TODO: Po ukończeniu metody createTransitLetter() i createShortagesLetter() zrobić:
-        - CodeReview dla tej klasy/klas serwisowych
-     */
-
     private final TransitLetterService transitLetterService;
     private final ShortagesLetterService shortagesLetterService;
 
