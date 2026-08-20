@@ -31,6 +31,17 @@ public class DbRepository {
         }, nrZleceniaiPudla);
     }
 
+    public List<RecordsJson> readZatwierdzone() {
+        String query = "SELECT json FROM DaneJson WHERE zatwierdzone = 1";
+        return jdbcTemplate.query(query, e -> {
+            List<RecordsJson> recordsJson= new ArrayList<>();
+            while (e.next()) {
+                recordsJson.add(objectMapper.readValue(e.getString("json"), RecordsJson.class));
+            }
+            return recordsJson;
+        });
+    }
+
     public List<RecordsJson> readJson() {
         String query = "SELECT json FROM DaneJson";
         return jdbcTemplate.query(query, e -> {
@@ -43,7 +54,7 @@ public class DbRepository {
     }
 
     public int dbRecordsCount() {
-        String query = "SELECT count(*) FROM DaneJson";
+        String query = "SELECT count(*) FROM DaneJson WHERE zatwierdzone = 1";
         return jdbcTemplate.query(query, e -> {
             e.next();
             return e.getInt(1);
@@ -68,7 +79,7 @@ public class DbRepository {
     }
 
     public void updateRecord(String json) {
-        String query = "UPDATE DaneJson SET json = ? WHERE nrZlecenia = ?";
+        String query = "UPDATE DaneJson SET json = ?, zatwierdzone = 1 WHERE nrZlecenia = ?";
         RecordsJson nrZlecenia = objectMapper.readValue(json, RecordsJson.class);
         jdbcTemplate.update(query, json, nrZlecenia.nrZleceniaiPudla());
     }
@@ -81,5 +92,10 @@ public class DbRepository {
     public void deleteOne(String id) {
         String query = "DELETE FROM DaneJson WHERE id=?";
         jdbcTemplate.update(query, id);
+    }
+
+    public void deleteZatwierdzone() {
+        String query = "DELETE FROM DaneJson WHERE zatwierdzone = 1";
+        jdbcTemplate.update(query);
     }
 }

@@ -35,7 +35,7 @@ public class ShortagesLetterService {
     public XSSFWorkbook createShortagesLetterInsiders(){
         try{XSSFWorkbook workbook = createShortagesLetter();
             Sheet sheet = workbook.getSheetAt(0);
-            List<RecordsJson> recordsJson = dbRepository.readJson();
+            List<RecordsJson> recordsJson = dbRepository.readZatwierdzone();
             int rowInData = 0;
             int rowInExcel = 6;
             for(int i = 0; i < 26; i++) {
@@ -71,7 +71,7 @@ public class ShortagesLetterService {
     public XSSFWorkbook createShortagesLetterOutsiders(){
         try {XSSFWorkbook workbook = createShortagesLetterInsiders();
             Sheet sheet = workbook.getSheetAt(1);
-            List<RecordsJson> recordsJson = dbRepository.readJson();
+            List<RecordsJson> recordsJson = dbRepository.readZatwierdzone();
             int rowInData = 0;
             int rowInExcel = 6;
             for(int i = 0; i < 26; i++) {

@@ -34,7 +34,7 @@ public class TransitLetterService {
 
             Sheet sheet = workbook.getSheetAt(0);
 
-            List<RecordsJson> recordsJson = dbRepository.readJson();
+            List<RecordsJson> recordsJson = dbRepository.readZatwierdzone();
             int rowInData = 0;
             int rowInExcel = 16;
             int sumaDobrychUszczelek = 0;

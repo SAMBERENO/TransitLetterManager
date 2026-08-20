@@ -45,6 +45,7 @@ public class AndroidController {
         try {
             if (dbRepository.dbRecordsCount() > 0) {
                 listsCreationOrganizerService.createLists();
+                dbRepository.deleteZatwierdzone();
                 return ResponseEntity.ok("Utworzono liste");
             }
             else
@@ -79,6 +80,8 @@ public class AndroidController {
     public ResponseEntity<?> updateRecord(@RequestBody String json) {
         try {
             dbRepository.updateRecord(json);
+            if (dbRepository.dbRecordsCount() >= 13)
+                listsCreationOrganizerService.createShortagesList();
             return ResponseEntity.ok("Zaktualizowano pozycje");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Błąd: " + e.getMessage());

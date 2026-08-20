@@ -17,4 +17,8 @@ public class ListsCreationOrganizerService {
         transitLetterService.createTransitLetter();
         shortagesLetterService.buildLetter();
     }
+
+    public void createShortagesList(){
+        transitLetterService.createTransitLetter();
+    }
 }
