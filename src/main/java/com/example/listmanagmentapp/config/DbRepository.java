@@ -7,9 +7,7 @@ import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Repository
 public class DbRepository {
@@ -19,17 +17,6 @@ public class DbRepository {
 
     public DbRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-    }
-
-    public Map<Integer, String> readAll() {
-        String query = "SELECT * FROM DaneJson";
-        return jdbcTemplate.query(query, e -> {
-            Map<Integer, String> map = new HashMap<>();
-            while (e.next()) {
-                map.put(e.getInt(0), e.getString(1));
-            }
-            return map;
-        });
     }
 
     public String getJsonByID(String nrZleceniaiPudla) {
@@ -74,6 +61,12 @@ public class DbRepository {
         String query = "INSERT INTO DaneJson (nrZlecenia, json) VALUES (?, ?)";
         RecordsJson nrZleceniaiPudla = objectMapper.readValue(json, RecordsJson.class);
         jdbcTemplate.update(query, nrZleceniaiPudla.nrZleceniaiPudla(), json);
+    }
+
+    public void updateRecord(String json) {
+        String query = "UPDATE DaneJson SET json = ? WHERE nrZlecenia = ?";
+        RecordsJson nrZlecenia = objectMapper.readValue(json, RecordsJson.class);
+        jdbcTemplate.update(query, json, nrZlecenia.nrZleceniaiPudla());
     }
 
     public void deleteAll() {
