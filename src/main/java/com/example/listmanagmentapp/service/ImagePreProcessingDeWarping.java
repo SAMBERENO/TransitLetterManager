@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-//Do usunięcia kiedy potwierdzą udostępnienie kodów QR
+//Do usunięcia jak potwierdzą udostępnienie kodów QR
 
 @Service
 public class ImagePreProcessingDeWarping {
