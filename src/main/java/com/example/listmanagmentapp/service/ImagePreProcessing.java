@@ -2,7 +2,6 @@ package com.example.listmanagmentapp.service;
 
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.CLAHE;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.photo.Photo;
 import org.springframework.stereotype.Service;
@@ -15,8 +14,8 @@ public class ImagePreProcessing {
 
     public ImagePreProcessing() {}
 
-    private Mat returnImage(String imagePat) {
-        return Imgcodecs.imread(imagePat);
+    private Mat returnImage(String imagePath) {
+        return Imgcodecs.imread(imagePath);
     }
 
     public Mat bilateralFilter(String imagePath){
@@ -159,8 +158,9 @@ public class ImagePreProcessing {
     }
 
 
-    public void saveImage(String imagePath) {
+    public Mat saveImage(String imagePath) {
         Mat image = warpPerspective(imagePath);
         Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\1.jpg", image);
+        return image;
     }
 }
