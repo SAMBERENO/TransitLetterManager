@@ -1,24 +1,21 @@
 package com.example.listmanagmentapp.service;
 
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.objdetect.BarcodeDetector;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.Result;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
 @Service
 public class BarcodeReaderService {
 
     ImagePreProcessing imagePreProcessing = new ImagePreProcessing();
 
-    public List<String> scanBarCodes(String imagePath){
-        List<String> result = new ArrayList<>();
-        Mat mat = Imgcodecs.imread(imagePath);
-        BarcodeDetector graphicalCodeDetector = new BarcodeDetector();
-        graphicalCodeDetector.detectAndDecodeMulti(mat, result);
-        System.out.println(result);
-        return result;
-    }
+
 }
