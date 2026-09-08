@@ -1,5 +1,6 @@
 package com.example.listmanagmentapp.service;
 
+import com.example.listmanagmentapp.config.ConfigurationFileReader;
 import com.example.listmanagmentapp.config.DbRepository;
 import com.example.listmanagmentapp.dto.RecordsJson;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -16,7 +17,8 @@ import java.util.List;
 public class ShortagesLetterService {
 
     private final DbRepository dbRepository;
-    private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ExeleDoTestow/";
+    private final ConfigurationFileReader configurationFileReader = new ConfigurationFileReader();
+    private final String outputPath = configurationFileReader.getShortagesLetterPath();
     private final LocalDate date = LocalDate.now();
 
     public ShortagesLetterService(DbRepository dbRepository){

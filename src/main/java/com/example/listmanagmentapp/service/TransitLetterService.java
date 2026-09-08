@@ -1,5 +1,6 @@
 package com.example.listmanagmentapp.service;
 
+import com.example.listmanagmentapp.config.ConfigurationFileReader;
 import com.example.listmanagmentapp.config.DbRepository;
 import com.example.listmanagmentapp.dto.RecordsJson;
 import org.apache.poi.ooxml.POIXMLException;
@@ -19,7 +20,8 @@ import java.util.List;
 public class TransitLetterService {
 
     private final DbRepository dbRepository;
-    private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ExeleDoTestow/";
+    private final ConfigurationFileReader configurationFileReader =  new ConfigurationFileReader();
+    private final String outputPath = configurationFileReader.getTransitLetterPath();
     private final LocalDate date = LocalDate.now();
 
     public TransitLetterService(DbRepository dbRepository){
