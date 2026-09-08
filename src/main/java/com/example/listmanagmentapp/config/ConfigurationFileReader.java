@@ -12,19 +12,19 @@ public class ConfigurationFileReader {
     private final Properties properties = new  Properties();
 
     public ConfigurationFileReader() {
-        try (FileInputStream fis = new FileInputStream("releaseApp/ListManagementApp/configuration.properties")) {
+        try (FileInputStream fis = new FileInputStream("configuration.properties")) {
             properties.load(fis);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
 
-    public String getShortagesLetterPath(){
-        return properties.getProperty("ShortagesLetterOutputPath");
+    public String getExcelFilesOutputPath() {
+        return properties.getProperty("ExcelFilesOutputPath");
     }
 
-    public String getTransitLetterPath(){
-        return properties.getProperty("TransitLetterOutputPath");
+    public String getExcelFilesInputPath() {
+        return properties.getProperty("ExcelFilesInputPath");
     }
 
 }

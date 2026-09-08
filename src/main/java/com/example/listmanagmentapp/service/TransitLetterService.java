@@ -21,7 +21,8 @@ public class TransitLetterService {
 
     private final DbRepository dbRepository;
     private final ConfigurationFileReader configurationFileReader =  new ConfigurationFileReader();
-    private final String outputPath = configurationFileReader.getTransitLetterPath();
+    private final String outputPath = configurationFileReader.getExcelFilesOutputPath();
+    private final String inputPath = configurationFileReader.getExcelFilesInputPath();
     private final LocalDate date = LocalDate.now();
 
     public TransitLetterService(DbRepository dbRepository){
@@ -29,7 +30,7 @@ public class TransitLetterService {
     }
 
     public void createTransitLetter(){
-        try(FileInputStream fin = new FileInputStream("FormatkaListu.xlsx");
+        try(FileInputStream fin = new FileInputStream(inputPath + "FormatkaListu.xlsx");
             XSSFWorkbook workbook = new XSSFWorkbook(fin);
             FileOutputStream fout = new FileOutputStream(outputPath + "List " + date + ".xlsx")){
 
