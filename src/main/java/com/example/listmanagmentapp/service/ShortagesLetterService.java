@@ -16,7 +16,6 @@ import java.util.List;
 public class ShortagesLetterService {
 
     private final DbRepository dbRepository;
-    private final String inputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/CzysteArkuszeExcel/";
     private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ExeleDoTestow/";
     private final LocalDate date = LocalDate.now();
 
@@ -25,7 +24,7 @@ public class ShortagesLetterService {
     }
 
     public XSSFWorkbook createShortagesLetter(){
-        try(FileInputStream fin = new FileInputStream(inputPath + "FormatkaRuchyBrakow.xlsx")){
+        try(FileInputStream fin = new FileInputStream("FormatkaRuchyBrakow.xlsx")){
             return new XSSFWorkbook(fin);
         } catch (IOException e) {
             System.out.println("RuchyBrakow IO Blad: " + e.getMessage());

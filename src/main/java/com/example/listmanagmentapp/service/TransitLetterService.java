@@ -19,7 +19,6 @@ import java.util.List;
 public class TransitLetterService {
 
     private final DbRepository dbRepository;
-    private final String inputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/CzysteArkuszeExcel/";
     private final String outputPath = "C:/Users/arek4/OneDrive/Pulpit(1)/ProjektNaZakladProd/ExeleDoTestow/";
     private final LocalDate date = LocalDate.now();
 
@@ -28,7 +27,7 @@ public class TransitLetterService {
     }
 
     public void createTransitLetter(){
-        try(FileInputStream fin = new FileInputStream(inputPath + "FormatkaListu.xlsx");
+        try(FileInputStream fin = new FileInputStream("FormatkaListu.xlsx");
             XSSFWorkbook workbook = new XSSFWorkbook(fin);
             FileOutputStream fout = new FileOutputStream(outputPath + "List " + date + ".xlsx")){
 

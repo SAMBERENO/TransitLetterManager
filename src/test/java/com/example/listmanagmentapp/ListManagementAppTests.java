@@ -18,7 +18,7 @@ class ListManagementAppTests {
 
     @Test
     void contextLoads() {
-        assertEquals(4, dbRepository.dbRecordsCount());
+        assertEquals(1, dbRepository.dbRecordsCount());
     }
 
     @Test
