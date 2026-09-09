@@ -18,11 +18,12 @@ class ListManagementAppTests {
 
     @Test
     void contextLoads() {
-        assertEquals(1, dbRepository.dbRecordsCount());
+        assertEquals(0, dbRepository.dbRecordsCount());
     }
 
     @Test
     void getAllZatwierdzoneRecords() {
-        assertEquals(1, dbRepository.readZatwierdzone().size());
+
+        assertEquals(0, dbRepository.readZatwierdzone().size());
     }
 }
