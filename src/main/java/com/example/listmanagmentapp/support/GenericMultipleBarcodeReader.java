@@ -28,7 +28,7 @@ import java.util.*;
  */
 public final class GenericMultipleBarcodeReader implements MultipleBarcodeReader {
 
-    private static final int MIN_DIMENSION_TO_RECUR = 50;
+    private static final int MIN_DIMENSION_TO_RECUR = 200;
     private static final int MAX_DEPTH = 6;
 
     static final Result[] EMPTY_RESULT_ARRAY = new Result[0];

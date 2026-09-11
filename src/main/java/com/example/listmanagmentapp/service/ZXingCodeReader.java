@@ -13,25 +13,26 @@ import org.springframework.stereotype.Service;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
 public class ZXingCodeReader {
 
     GenericMultipleBarcodeReader genericMultipleBarcodeReader = new GenericMultipleBarcodeReader(new MultiFormatReader());
-
-    Map<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
-
+    ImagePreProcessingDeWarping imagePreProcessingDeWarping = new ImagePreProcessingDeWarping();
 
 
 
-    public Result[] decodeImage(String pathName) throws NotFoundException, IOException {
-        PDDocument document = Loader.loadPDF(new File(pathName));
-        PDFRenderer renderer = new PDFRenderer(document);
-        BufferedImage image = renderer.renderImageWithDPI(0, 600);
-        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(image)));
-        return genericMultipleBarcodeReader.decodeMultiple(bitmap);
+    public List<Result[]> decodeImage(String pathName) throws NotFoundException, IOException {
+        List<BufferedImage> bufferedImageList = imagePreProcessingDeWarping.getBufferedImageList(pathName);
+        List<Result[]> resultList = new ArrayList<>();
+        for (BufferedImage bufferedImage : bufferedImageList) {
+            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(bufferedImage)));
+            resultList.add(genericMultipleBarcodeReader.decodeMultiple(bitmap));
+        }
+        return resultList;
     }
-
 }
