@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ImagePreProcessingDeWarping {
+public class ImagePreProcessing {
 
-    public ImagePreProcessingDeWarping() {}
+    public ImagePreProcessing() {}
 
     private Mat returnedImage;
     private void returnImage(String imagePath) {
@@ -81,15 +81,5 @@ public class ImagePreProcessingDeWarping {
             bufferedImageList.add(bufferedImage);
         }
         return bufferedImageList;
-    }
-
-    public void saveImage(String imagePath) {
-        List<Mat> mats = BarCodesRemoval();
-        //for (int i  = 0; i < mats.size(); i++) {
-         //   Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\" + i+1 + ".jpg", mats.get(i));
-
-        //}
-        //Mat image = BarCodesRemoval(imagePath);
-        Imgcodecs.imwrite("C:\\Users\\arek4\\OneDrive\\Pulpit(1)\\ProjektNaZakladProd\\ZdjeciaDoSkanowania\\1.jpg", mats.get(0));
     }
 }
