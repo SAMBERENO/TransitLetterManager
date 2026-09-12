@@ -9,7 +9,7 @@ import java.util.Properties;
 @Configuration
 public class ConfigurationFileReader {
 
-    private final Properties properties = new  Properties();
+    private static final Properties properties = new  Properties();
 
     public ConfigurationFileReader() {
         try (FileInputStream fis = new FileInputStream("configuration.properties")) {
@@ -26,5 +26,7 @@ public class ConfigurationFileReader {
     public String getExcelFilesInputPath() {
         return properties.getProperty("ExcelFilesInputPath");
     }
+
+    public static String getPDFsFolderPath() { return properties.getProperty("PDFsFolderPath"); }
 
 }

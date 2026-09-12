@@ -4,17 +4,21 @@ import com.example.listmanagmentapp.dto.CategoryDamage;
 import com.example.listmanagmentapp.dto.JsonFromAndroid;
 import com.example.listmanagmentapp.dto.QrRecords;
 import com.example.listmanagmentapp.dto.RecordsJson;
+import com.example.listmanagmentapp.service.ZXingCodeReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 public class DbRepository {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final JdbcTemplate jdbcTemplate;
 
     public DbRepository(JdbcTemplate jdbcTemplate) {
@@ -69,6 +73,17 @@ public class DbRepository {
                     new CategoryDamage(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
             String jsonString = objectMapper.writeValueAsString(recordsJson);
             jdbcTemplate.update(query, qrRecords.nrZleceniaiPudla(), jsonString);
+        }
+    }
+
+    public void addRecordsFromPDF(String pdfsFolder) throws NotFoundException, IOException {
+        String query = "INSERT INTO DaneJson (nrZlecenia, json) VALUES (?, ?)";
+        ZXingCodeReader reader = new ZXingCodeReader();
+        for  (Result[] results : reader.decodeImage(pdfsFolder)) {
+            RecordsJson recordsJson = new RecordsJson('X', results[1].toString(), results[0].toString(), null, results[2].getNumBits(), 0, 0, false,
+                    new CategoryDamage(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+            String jsonString = objectMapper.writeValueAsString(recordsJson);
+            jdbcTemplate.update(query, results[0].toString(), jsonString);
         }
     }
 

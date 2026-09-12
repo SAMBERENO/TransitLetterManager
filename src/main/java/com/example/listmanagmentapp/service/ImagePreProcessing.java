@@ -23,6 +23,8 @@ public class ImagePreProcessing {
     public ImagePreProcessing() {}
 
     private Mat returnedImage;
+
+    //Zmienić sposób przekazania zdjęcia z .pdf na .jpg
     private void returnImage(String imagePath) {
         try (PDDocument document = Loader.loadPDF(new File(imagePath))) {
             PDFRenderer renderer = new PDFRenderer(document);

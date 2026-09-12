@@ -1,5 +1,6 @@
 package com.example.listmanagmentapp.controller;
 
+import com.example.listmanagmentapp.config.ConfigurationFileReader;
 import com.example.listmanagmentapp.config.DbRepository;
 import com.example.listmanagmentapp.dto.RecordsJson;
 import com.example.listmanagmentapp.service.ListsCreationOrganizerService;
@@ -60,6 +61,16 @@ public class AndroidController {
     public ResponseEntity<?> addJsonFromAndroid(@RequestBody String json) {
         try {
             dbRepository.addJsonFromAndroid(json);
+            return ResponseEntity.ok("Dodano pozycje");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Błąd: "  + e.getMessage());
+        }
+    }
+
+    @PostMapping("/addPDFRecords")
+    public ResponseEntity<?> addPDFRecords() {
+        try {
+            dbRepository.addRecordsFromPDF(ConfigurationFileReader.getPDFsFolderPath());
             return ResponseEntity.ok("Dodano pozycje");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Błąd: "  + e.getMessage());
