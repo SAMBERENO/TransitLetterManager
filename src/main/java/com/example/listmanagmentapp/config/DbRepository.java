@@ -4,6 +4,7 @@ import com.example.listmanagmentapp.dto.CategoryDamage;
 import com.example.listmanagmentapp.dto.JsonFromAndroid;
 import com.example.listmanagmentapp.dto.QrRecords;
 import com.example.listmanagmentapp.dto.RecordsJson;
+import com.example.listmanagmentapp.service.PDFHandler;
 import com.example.listmanagmentapp.service.ZXingCodeReader;
 import com.google.zxing.NotFoundException;
 import com.google.zxing.Result;
@@ -21,10 +22,12 @@ public class DbRepository {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final JdbcTemplate jdbcTemplate;
     private final ZXingCodeReader zxingCodeReader;
+    private final PDFHandler pdfHandler;
 
-    public DbRepository(JdbcTemplate jdbcTemplate,  ZXingCodeReader zxingCodeReader) {
+    public DbRepository(JdbcTemplate jdbcTemplate,  ZXingCodeReader zxingCodeReader, PDFHandler pdfHandler) {
         this.jdbcTemplate = jdbcTemplate;
         this.zxingCodeReader = zxingCodeReader;
+        this.pdfHandler = pdfHandler;
     }
 
     public String getJsonByID(String nrZleceniaiPudla) {
@@ -81,7 +84,7 @@ public class DbRepository {
     public void addRecordsFromPDF() throws NotFoundException, IOException {
         String query = "INSERT INTO DaneJson (nrZlecenia, json) VALUES (?, ?)";
         for  (Result[] results : zxingCodeReader.decodeImage()) {
-            RecordsJson recordsJson = new RecordsJson('X', results[1].toString(), results[0].toString(), null, results[2].getNumBits(), 0, 0, false,
+            RecordsJson recordsJson = new RecordsJson('X', results[1].toString(), results[0].toString(), null, Integer.parseInt(results[2].toString()), 0, 0, false,
                     new CategoryDamage(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
             String jsonString = objectMapper.writeValueAsString(recordsJson);
             jdbcTemplate.update(query, results[0].toString(), jsonString);

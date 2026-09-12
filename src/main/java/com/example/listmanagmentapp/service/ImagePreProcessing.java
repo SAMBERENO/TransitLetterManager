@@ -36,7 +36,6 @@ public class ImagePreProcessing {
             ImageIO.write(image, "jpg", new File("jpgPhoto.jpg"));
             returnedImage = Imgcodecs.imread("jpgPhoto.jpg", Imgcodecs.IMREAD_GRAYSCALE);
             Imgcodecs.imwrite("jpgPhotoInv.jpg", returnedImage);
-            pdfHandler.removeUsedPDF();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -87,6 +86,7 @@ public class ImagePreProcessing {
             BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(byteArray));
             bufferedImageList.add(bufferedImage);
         }
+        pdfHandler.removeUsedPDF();
         return bufferedImageList;
     }
 }

@@ -3,7 +3,6 @@ package com.example.listmanagmentapp.service;
 import com.example.listmanagmentapp.config.ConfigurationFileReader;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
