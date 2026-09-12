@@ -70,7 +70,7 @@ public class AndroidController {
     @PostMapping("/addPDFRecords")
     public ResponseEntity<?> addPDFRecords() {
         try {
-            dbRepository.addRecordsFromPDF(ConfigurationFileReader.getPDFsFolderPath());
+            dbRepository.addRecordsFromPDF();
             return ResponseEntity.ok("Dodano pozycje");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Błąd: "  + e.getMessage());

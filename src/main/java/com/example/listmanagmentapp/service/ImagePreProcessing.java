@@ -20,18 +20,23 @@ import java.util.List;
 @Service
 public class ImagePreProcessing {
 
-    public ImagePreProcessing() {}
+    private final PDFHandler pdfHandler;
+
+    public ImagePreProcessing(PDFHandler pdfHandler) {
+        this.pdfHandler = pdfHandler;
+    }
 
     private Mat returnedImage;
 
     //Zmienić sposób przekazania zdjęcia z .pdf na .jpg
-    private void returnImage(String imagePath) {
-        try (PDDocument document = Loader.loadPDF(new File(imagePath))) {
+    private void returnImage() {
+        try (PDDocument document = Loader.loadPDF(new File(pdfHandler.returnPDF()))) {
             PDFRenderer renderer = new PDFRenderer(document);
             BufferedImage image = renderer.renderImageWithDPI(0, 500, ImageType.BINARY);
             ImageIO.write(image, "jpg", new File("jpgPhoto.jpg"));
             returnedImage = Imgcodecs.imread("jpgPhoto.jpg", Imgcodecs.IMREAD_GRAYSCALE);
             Imgcodecs.imwrite("jpgPhotoInv.jpg", returnedImage);
+            pdfHandler.removeUsedPDF();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -45,7 +50,7 @@ public class ImagePreProcessing {
         return contours;
     }
 
-    public List<Mat> BarCodesRemoval() {
+    public List<Mat> BarCodesRemoval() throws IOException {
         List<MatOfPoint> contours = findContours();
         List<Rect> rects = new ArrayList<>();
         List<Mat> barCodeRows = new ArrayList<>();
@@ -71,8 +76,8 @@ public class ImagePreProcessing {
                 }}}return barCodeRows;
     }
 
-    public List<BufferedImage> getBufferedImageList(String imagePath) throws IOException {
-        returnImage(imagePath);
+    public List<BufferedImage> getBufferedImageList() throws IOException {
+        returnImage();
         List<Mat> matList = BarCodesRemoval();
         List<BufferedImage> bufferedImageList = new ArrayList<>();
         for (Mat mat : matList) {

@@ -20,9 +20,11 @@ public class DbRepository {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final JdbcTemplate jdbcTemplate;
+    private final ZXingCodeReader zxingCodeReader;
 
-    public DbRepository(JdbcTemplate jdbcTemplate) {
+    public DbRepository(JdbcTemplate jdbcTemplate,  ZXingCodeReader zxingCodeReader) {
         this.jdbcTemplate = jdbcTemplate;
+        this.zxingCodeReader = zxingCodeReader;
     }
 
     public String getJsonByID(String nrZleceniaiPudla) {
@@ -76,10 +78,9 @@ public class DbRepository {
         }
     }
 
-    public void addRecordsFromPDF(String pdfsFolder) throws NotFoundException, IOException {
+    public void addRecordsFromPDF() throws NotFoundException, IOException {
         String query = "INSERT INTO DaneJson (nrZlecenia, json) VALUES (?, ?)";
-        ZXingCodeReader reader = new ZXingCodeReader();
-        for  (Result[] results : reader.decodeImage(pdfsFolder)) {
+        for  (Result[] results : zxingCodeReader.decodeImage()) {
             RecordsJson recordsJson = new RecordsJson('X', results[1].toString(), results[0].toString(), null, results[2].getNumBits(), 0, 0, false,
                     new CategoryDamage(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
             String jsonString = objectMapper.writeValueAsString(recordsJson);

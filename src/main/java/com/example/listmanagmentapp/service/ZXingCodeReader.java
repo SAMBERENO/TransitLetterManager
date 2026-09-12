@@ -15,10 +15,14 @@ import java.util.List;
 public class ZXingCodeReader {
 
     GenericMultipleBarcodeReader genericMultipleBarcodeReader = new GenericMultipleBarcodeReader(new MultiFormatReader());
-    ImagePreProcessing imagePreProcessing = new ImagePreProcessing();
+    private final ImagePreProcessing imagePreProcessing;
 
-    public List<Result[]> decodeImage(String pathName) throws NotFoundException, IOException {
-        List<BufferedImage> bufferedImageList = imagePreProcessing.getBufferedImageList(pathName);
+    public ZXingCodeReader(ImagePreProcessing imagePreProcessing) {
+        this.imagePreProcessing = imagePreProcessing;
+    }
+
+    public List<Result[]> decodeImage() throws NotFoundException, IOException {
+        List<BufferedImage> bufferedImageList = imagePreProcessing.getBufferedImageList();
         List<Result[]> resultList = new ArrayList<>();
         for (BufferedImage bufferedImage : bufferedImageList) {
             BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(bufferedImage)));

@@ -15,7 +15,7 @@ public class ConfigurationFileReader {
         try (FileInputStream fis = new FileInputStream("configuration.properties")) {
             properties.load(fis);
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Nie znaleziono pliku configuration.properties " + e.getMessage());
         }
     }
 
@@ -27,6 +27,6 @@ public class ConfigurationFileReader {
         return properties.getProperty("ExcelFilesInputPath");
     }
 
-    public static String getPDFsFolderPath() { return properties.getProperty("PDFsFolderPath"); }
+    public static String getPDFsFolderPath() { return properties.getProperty("FolderWithPDFs"); }
 
 }
