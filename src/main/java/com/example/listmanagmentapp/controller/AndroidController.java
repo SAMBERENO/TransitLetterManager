@@ -7,6 +7,8 @@ import com.example.listmanagmentapp.service.ListsCreationOrganizerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequestMapping("/android")
 @RestController
 public class AndroidController {
@@ -22,22 +24,18 @@ public class AndroidController {
     @GetMapping("readJson")
     public ResponseEntity<?> readJson() {
         try {
-            for (RecordsJson recordsJson : dbRepository.readJson()) {
-                System.out.println(recordsJson);
-            }
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(dbRepository.readJson());
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             return ResponseEntity.badRequest().body("Błąd: "  + e.getMessage());
         }
     }
 
     @GetMapping("/getJsonByID")
-    public String getJsonByID(@RequestParam String nrZleceniaiPudla) {
+    public ResponseEntity<?> getJsonByID(@RequestParam String nrZleceniaiPudla) {
         try {
-            return dbRepository.getJsonByID(nrZleceniaiPudla);
+            return ResponseEntity.ok(dbRepository.getJsonByID(nrZleceniaiPudla));
         } catch (Exception e) {
-            return "Błąd: " + e.getMessage();
+            return ResponseEntity.badRequest().body("Błąd: " + e.getMessage());
         }
     }
 
@@ -52,7 +50,6 @@ public class AndroidController {
             else
                 return ResponseEntity.ok("Brak pozycji w bazie danych!");
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             return ResponseEntity.badRequest().body("Błąd: " + e.getMessage());
         }
     }
