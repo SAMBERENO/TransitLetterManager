@@ -1,9 +1,6 @@
 package com.example.listmanagmentapp.config;
 
-import com.example.listmanagmentapp.dto.CategoryDamage;
-import com.example.listmanagmentapp.dto.JsonFromAndroid;
-import com.example.listmanagmentapp.dto.QrRecords;
-import com.example.listmanagmentapp.dto.RecordsJson;
+import com.example.listmanagmentapp.dto.*;
 import com.example.listmanagmentapp.service.PDFHandler;
 import com.example.listmanagmentapp.service.ZXingCodeReader;
 import com.google.zxing.NotFoundException;
@@ -22,12 +19,10 @@ public class DbRepository {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final JdbcTemplate jdbcTemplate;
     private final ZXingCodeReader zxingCodeReader;
-    private final PDFHandler pdfHandler;
 
-    public DbRepository(JdbcTemplate jdbcTemplate,  ZXingCodeReader zxingCodeReader, PDFHandler pdfHandler) {
+    public DbRepository(JdbcTemplate jdbcTemplate,  ZXingCodeReader zxingCodeReader) {
         this.jdbcTemplate = jdbcTemplate;
         this.zxingCodeReader = zxingCodeReader;
-        this.pdfHandler = pdfHandler;
     }
 
     public String getJsonByID(String nrZleceniaiPudla) {
@@ -51,12 +46,12 @@ public class DbRepository {
         });
     }
 
-    public List<RecordsJson> readJson() {
-        String query = "SELECT json FROM DaneJson";
+    public List<RecordsJsonWithStatus> readJson() {
+        String query = "SELECT json, zatwierdzone FROM DaneJson";
         return jdbcTemplate.query(query, e -> {
-            List<RecordsJson> recordsJson= new ArrayList<>();
+            List<RecordsJsonWithStatus> recordsJson= new ArrayList<>();
             while (e.next()) {
-                recordsJson.add(objectMapper.readValue(e.getString("json"), RecordsJson.class));
+                recordsJson.add(new RecordsJsonWithStatus(objectMapper.readValue(e.getString("json"), RecordsJson.class), e.getInt("zatwierdzone")));
             }
             return recordsJson;
         });

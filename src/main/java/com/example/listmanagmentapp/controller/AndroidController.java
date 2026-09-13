@@ -1,13 +1,9 @@
 package com.example.listmanagmentapp.controller;
 
-import com.example.listmanagmentapp.config.ConfigurationFileReader;
 import com.example.listmanagmentapp.config.DbRepository;
-import com.example.listmanagmentapp.dto.RecordsJson;
 import com.example.listmanagmentapp.service.ListsCreationOrganizerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequestMapping("/android")
 @RestController
@@ -21,8 +17,8 @@ public class AndroidController {
         this.listsCreationOrganizerService = listsCreationOrganizerService;
     }
 
-    @GetMapping("readJson")
-    public ResponseEntity<?> readJson() {
+    @GetMapping("/getAllRecords")
+    public ResponseEntity<?> getAllRecords() {
         try {
             return ResponseEntity.ok(dbRepository.readJson());
         } catch (Exception e) {
