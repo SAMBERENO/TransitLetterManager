@@ -36,3 +36,4 @@ build/
 toReleaseJar
 releaseApp
 src/test
+jpackageReleaseText.txt

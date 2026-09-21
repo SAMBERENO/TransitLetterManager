@@ -35,44 +35,34 @@ public class ImagePreProcessing {
             BufferedImage image = renderer.renderImageWithDPI(0, 500, ImageType.BINARY);
             ImageIO.write(image, "jpg", new File("jpgPhoto.jpg"));
             returnedImage = Imgcodecs.imread("jpgPhoto.jpg", Imgcodecs.IMREAD_GRAYSCALE);
-            Imgcodecs.imwrite("jpgPhotoInv.jpg", returnedImage);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
 
-    public List<MatOfPoint> findContours() {
-        Mat image = new Mat();
-        Core.bitwise_not(returnedImage, image);
-        List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(image, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-        return contours;
-    }
+    public List<Mat> BarCodesRemoval() {
+        List<Mat> barCodeList = new ArrayList<>();
+        int rowStart = 620;
+        int rowEnd = 800;
+        for (int i = 0; i <= 21; i++) {
+            Mat barCodesRow = returnedImage.submat(rowStart, rowEnd, 0, returnedImage.cols());
+            for (int y = 0; y <= barCodesRow.rows(); y++) {
+                for (int x  = 0; x <= barCodesRow.cols(); x++) {
+                    double[] pixel = barCodesRow.get(y, x);
+                    if (pixel[0] == 0) {
 
-    public List<Mat> BarCodesRemoval() throws IOException {
-        List<MatOfPoint> contours = findContours();
-        List<Rect> rects = new ArrayList<>();
-        List<Mat> barCodeRows = new ArrayList<>();
-        for (MatOfPoint matOfPoint : contours) {
-            MatOfPoint2f contour2f = new MatOfPoint2f(matOfPoint.toArray());
-            double perimeter = Imgproc.arcLength(contour2f, true);
-            MatOfPoint2f approx = new MatOfPoint2f();
-            Imgproc.approxPolyDP(contour2f, approx, 0.02 * perimeter, true);
-            if (approx.total() == 4) {
-                Rect rect = Imgproc.boundingRect(matOfPoint);
-                rects.add(rect);
+                    }
+                }
             }
         }
-        for (int i = 0; i < rects.size(); i++) {
-            if (rects.get(i).height <= 150 && rects.get(i).height >= 100 && rects.get(i).width <= 30) {
-                Mat cutOutMat = returnedImage.submat(rects.get(i).y, rects.get(i).y + rects.get(i).height, 0, returnedImage.cols());
-                barCodeRows.add(cutOutMat);
-                returnedImage.submat(Imgproc.boundingRect(cutOutMat)).setTo(Scalar.all(0));
-                for (int y = 0; y < rects.size(); y++) {
-                    if (rects.get(y).y >= rects.get(i).y && rects.get(y).y <= rects.get(i).y + rects.get(i).height) {
-                        rects.remove(y);
-                    }
-                }}}return barCodeRows;
+
+        int a = 0;
+        for (Mat mat : barCodeList) {
+            a++;
+            Imgcodecs.imwrite("jpgPhoto" + a + ".jpg", mat);
+        }
+        System.out.println("barCodeRows: " + barCodeList.size());
+        return barCodeList;
     }
 
     public List<BufferedImage> getBufferedImageList() throws IOException {
@@ -86,7 +76,7 @@ public class ImagePreProcessing {
             BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(byteArray));
             bufferedImageList.add(bufferedImage);
         }
-        pdfHandler.removeUsedPDF();
+        //pdfHandler.removeUsedPDF();
         return bufferedImageList;
     }
 }

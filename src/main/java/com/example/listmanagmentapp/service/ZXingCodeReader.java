@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -27,6 +28,9 @@ public class ZXingCodeReader {
         for (BufferedImage bufferedImage : bufferedImageList) {
             BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(bufferedImage)));
             resultList.add(genericMultipleBarcodeReader.decodeMultiple(bitmap));
+        }
+        for (Result[] results : resultList) {
+            System.out.println(Arrays.toString(results));
         }
         return resultList;
     }

@@ -81,6 +81,7 @@ public class DbRepository {
         for  (Result[] results : zxingCodeReader.decodeImage()) {
             RecordsJson recordsJson = new RecordsJson('X', results[1].toString(), results[0].toString(), null, Integer.parseInt(results[2].toString()), 0, 0, false,
                     new CategoryDamage(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+            System.out.println(recordsJson.zmiana() + " " + recordsJson.nrZleceniaiPudla() + " " + recordsJson.nrWyrobu() + " " + recordsJson.dataProdukcji());
             String jsonString = objectMapper.writeValueAsString(recordsJson);
             jdbcTemplate.update(query, results[0].toString(), jsonString);
         }
