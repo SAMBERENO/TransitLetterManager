@@ -8,9 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ZXingCodeReader {
@@ -22,16 +20,23 @@ public class ZXingCodeReader {
         this.imagePreProcessing = imagePreProcessing;
     }
 
-    public List<Result[]> decodeImage() throws NotFoundException, IOException {
-        List<BufferedImage> bufferedImageList = imagePreProcessing.getBufferedImageList();
-        List<Result[]> resultList = new ArrayList<>();
-        for (BufferedImage bufferedImage : bufferedImageList) {
-            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(bufferedImage)));
-            resultList.add(genericMultipleBarcodeReader.decodeMultiple(bitmap));
+    public List<Result[]> decodeImage() throws IOException {
+        try {
+            List<BufferedImage> bufferedImageList = imagePreProcessing.getBufferedImageList();
+            List<Result[]> resultList = new ArrayList<>();
+            Map<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
+            hints.put(
+                    DecodeHintType.POSSIBLE_FORMATS,
+                    List.of(BarcodeFormat.CODE_39)
+            );
+            for (BufferedImage bufferedImage : bufferedImageList) {
+                BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(bufferedImage)));
+                resultList.add(genericMultipleBarcodeReader.decodeMultiple(bitmap, hints));
+            }
+            return resultList;
+        } catch (NotFoundException e) {
+            System.out.println("decodeImage() exception: " + e.getMessage());
+            return null;
         }
-        for (Result[] results : resultList) {
-            System.out.println(Arrays.toString(results));
-        }
-        return resultList;
     }
 }
