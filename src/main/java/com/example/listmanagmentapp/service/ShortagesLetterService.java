@@ -18,8 +18,8 @@ public class ShortagesLetterService {
 
     private final DbRepository dbRepository;
     private final ConfigurationFileReader configurationFileReader = new ConfigurationFileReader();
-    private final String outputPath = configurationFileReader.getExcelFilesOutputPath();
-    private final String inputPath = configurationFileReader.getExcelFilesInputPath();
+    private final String outputPath = configurationFileReader.getLettersOutputPath();
+    private final String inputPath = configurationFileReader.getShortagesLetterInputPath();
     private final LocalDate date = LocalDate.now();
 
     public ShortagesLetterService(DbRepository dbRepository){
@@ -27,7 +27,7 @@ public class ShortagesLetterService {
     }
 
     public XSSFWorkbook createShortagesLetter(){
-        try(FileInputStream fin = new FileInputStream(inputPath + "FormatkaRuchyBrakow.xlsx")){
+        try(FileInputStream fin = new FileInputStream(inputPath)){
             return new XSSFWorkbook(fin);
         } catch (IOException e) {
             System.out.println("RuchyBrakow IO Blad: " + e.getMessage());

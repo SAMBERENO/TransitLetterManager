@@ -12,7 +12,7 @@ public class DataBaseConfig {
     @Bean
     public DataSource dataSource() {
         SQLiteDataSource dataSource = new SQLiteDataSource();
-        dataSource.setUrl("jdbc:sqlite:C:/Softs/ProjektNaZakladProd/ListManagmentApp/src/main/resources/JsonBuffer");
+        dataSource.setUrl("jdbc:sqlite:JsonBuffer");
        return dataSource;
     }
 

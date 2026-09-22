@@ -19,12 +19,14 @@ public class ConfigurationFileReader {
         }
     }
 
-    public String getExcelFilesOutputPath() {
-        return properties.getProperty("ExcelFilesOutputPath");
+    public String getTransitLetterInputPath() { return properties.getProperty("TransitLetterInputPath"); }
+
+    public String getShortagesLetterInputPath() {
+        return properties.getProperty("ShortagesLetterInputPath");
     }
 
-    public String getExcelFilesInputPath() {
-        return properties.getProperty("ExcelFilesInputPath");
+    public String getLettersOutputPath() {
+        return properties.getProperty("LettersOutputPath");
     }
 
     public static String getPDFsFolderPath() { return properties.getProperty("FolderWithPDFs"); }
