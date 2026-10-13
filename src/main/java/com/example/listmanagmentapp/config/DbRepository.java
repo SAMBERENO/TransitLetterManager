@@ -1,6 +1,7 @@
 package com.example.listmanagmentapp.config;
 
 import com.example.listmanagmentapp.dto.*;
+import com.example.listmanagmentapp.service.ListsCreationOrganizerService;
 import com.example.listmanagmentapp.service.PDFHandler;
 import com.example.listmanagmentapp.service.ZXingCodeReader;
 import com.google.zxing.NotFoundException;
@@ -94,8 +95,10 @@ public class DbRepository {
 
     public void updateRecord(String json) {
         String query = "UPDATE DaneJson SET json = ?, zatwierdzone = 1 WHERE nrZlecenia = ?";
-        RecordsJson nrZlecenia = objectMapper.readValue(json, RecordsJson.class);
-        jdbcTemplate.update(query, json, nrZlecenia.nrZleceniaiPudla());
+        RecordsJsonCollection recordsJsonCollection = objectMapper.readValue(json, RecordsJsonCollection.class);
+        for (RecordsJson recordsJson : recordsJsonCollection.recordsJsons()) {
+            jdbcTemplate.update(query, json, recordsJson.nrZleceniaiPudla());
+        }
     }
 
     public void deleteAll() {

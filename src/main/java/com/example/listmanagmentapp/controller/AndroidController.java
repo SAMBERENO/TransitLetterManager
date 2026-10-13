@@ -84,8 +84,7 @@ public class AndroidController {
     public ResponseEntity<?> updateRecord(@RequestBody String json) {
         try {
             dbRepository.updateRecord(json);
-            if (dbRepository.dbRecordsCount() >= 13)
-                listsCreationOrganizerService.createShortagesList();
+            dbRepository.deleteZatwierdzone();
             return ResponseEntity.ok("Zaktualizowano pozycje");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Błąd: " + e.getMessage());

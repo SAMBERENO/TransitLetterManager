@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -34,78 +35,95 @@ public class ShortagesLetterService {
         } return null;
     }
 
-    public XSSFWorkbook createShortagesLetterInsiders(){
-        try{XSSFWorkbook workbook = createShortagesLetter();
-            Sheet sheet = workbook.getSheetAt(0);
+    public List<XSSFWorkbook> createShortagesLetterInsiders(){
+        try {
+            List<XSSFWorkbook> excelSheets = new ArrayList<>();
             List<RecordsJson> recordsJson = dbRepository.readZatwierdzone();
+            int repeats = recordsJson.size() / 13;
             int rowInData = 0;
-            int rowInExcel = 6;
-            for(int i = 0; i < 26; i++) {
-                if(rowInData < recordsJson.size()) {
-                    int excelDamagedCell = 7;
-                    rowInExcel += 2;
-                    sheet.getRow(rowInExcel).getCell(0).setCellValue(String.valueOf(recordsJson.get(rowInData).zmiana()));
-                    String nrZleceniaiPudla = recordsJson.get(rowInData).nrZleceniaiPudla();
-                    String[] nrZlecenia = nrZleceniaiPudla.split("[$]");
-                    sheet.getRow(rowInExcel).getCell(1).setCellValue(nrZlecenia[0]);
-                    sheet.getRow(rowInExcel).getCell(2).setCellValue(recordsJson.get(rowInData).nrWyrobu());
-                    sheet.getRow(rowInExcel).getCell(3).setCellValue(recordsJson.get(rowInData).dataProdukcji());
-                    sheet.getRow(rowInExcel).getCell(5).setCellValue(recordsJson.get(rowInData).sumaUszczelek());
-                    for(Integer e : recordsJson.get(rowInData).braki().getValues())
-                    {
-                        if (e != 0) {
-                            sheet.getRow(rowInExcel).getCell(excelDamagedCell).setCellValue(e);
+            int loop = 0;
+            do {
+                XSSFWorkbook workbook = createShortagesLetter();
+                Sheet sheet = workbook.getSheetAt(0);
+                int rowInExcel = 6;
+                for (int i = 0; i < 26; i++) {
+                    if (rowInData < recordsJson.size()) {
+                        int excelDamagedCell = 7;
+                        rowInExcel += 2;
+                        sheet.getRow(rowInExcel).getCell(0).setCellValue(String.valueOf(recordsJson.get(rowInData).zmiana()));
+                        String nrZleceniaiPudla = recordsJson.get(rowInData).nrZleceniaiPudla();
+                        String[] nrZlecenia = nrZleceniaiPudla.split("[$]");
+                        sheet.getRow(rowInExcel).getCell(1).setCellValue(nrZlecenia[0]);
+                        sheet.getRow(rowInExcel).getCell(2).setCellValue(recordsJson.get(rowInData).nrWyrobu());
+                        sheet.getRow(rowInExcel).getCell(3).setCellValue(recordsJson.get(rowInData).dataProdukcji());
+                        sheet.getRow(rowInExcel).getCell(5).setCellValue(recordsJson.get(rowInData).sumaUszczelek());
+                        for (Integer e : recordsJson.get(rowInData).braki().getValues()) {
+                            if (e != 0) {
+                                sheet.getRow(rowInExcel).getCell(excelDamagedCell).setCellValue(e);
+                            }
+                            excelDamagedCell++;
                         }
-                        excelDamagedCell++;
+                        if (recordsJson.get(rowInData).kz()) {
+                            sheet.getRow(rowInExcel).getCell(30).setCellValue("KZ");
+                        }
+                        rowInData++;
+                    } else {
+                        break;
                     }
-                    if (recordsJson.get(rowInData).kz()) {
-                        sheet.getRow(rowInExcel).getCell(30).setCellValue("KZ");
-                    }
-                    rowInData++;
-                } else {
-                    break;
                 }
-            } return workbook;
+                excelSheets.add(workbook);
+                loop++;
+            } while (loop <= repeats);
+            return excelSheets;
         } catch (Exception e) {
             System.out.println(e.getMessage());
         } return null;
     }
-    public XSSFWorkbook createShortagesLetterOutsiders(){
-        try {XSSFWorkbook workbook = createShortagesLetterInsiders();
-            Sheet sheet = workbook.getSheetAt(1);
-            List<RecordsJson> recordsJson = dbRepository.readZatwierdzone();
-            int rowInData = 0;
-            int rowInExcel = 6;
-            for(int i = 0; i < 26; i++) {
-                if(rowInData < recordsJson.size()) {
-                    int excelDamagedCell = 5;
-                    rowInExcel += 2;
-                    sheet.getRow(rowInExcel).getCell(0).setCellValue(recordsJson.get(rowInData).nrZleceniaiPudla());
-                    for(Integer e : recordsJson.get(rowInData).braki().getValues())
-                    {
-                        if (e != 0) {
-                            sheet.getRow(rowInExcel).getCell(excelDamagedCell).setCellValue(e);
+    public List<XSSFWorkbook> createShortagesLetterOutsiders(){
+        try {
+            List<XSSFWorkbook> oldExcelSheets = createShortagesLetterInsiders();
+            List<XSSFWorkbook> newExcelSheets = new ArrayList<>();
+            for (XSSFWorkbook workbook : oldExcelSheets) {
+                Sheet sheet = workbook.getSheetAt(1);
+                List<RecordsJson> recordsJson = dbRepository.readZatwierdzone();
+                int rowInData = 0;
+                int rowInExcel = 6;
+                for (int i = 0; i < 26; i++) {
+                    if (rowInData < recordsJson.size()) {
+                        int excelDamagedCell = 5;
+                        rowInExcel += 2;
+                        sheet.getRow(rowInExcel).getCell(0).setCellValue(recordsJson.get(rowInData).nrZleceniaiPudla());
+                        for (Integer e : recordsJson.get(rowInData).braki().getValues()) {
+                            if (e != 0) {
+                                sheet.getRow(rowInExcel).getCell(excelDamagedCell).setCellValue(e);
+                            }
+                            excelDamagedCell++;
                         }
-                        excelDamagedCell++;
-                    }
 
-                    rowInData++;
-                } else {
-                    break;
+                        rowInData++;
+                    } else {
+                        break;
+                    }
                 }
-            }return workbook;
+                newExcelSheets.add(workbook);
+            } return newExcelSheets;
         } catch(Exception e) {
             System.out.println(e.getMessage());
         } return null;
     }
 
     public void buildLetter(){
-        try(XSSFWorkbook workbook = createShortagesLetterOutsiders();
-            FileOutputStream fout = new FileOutputStream(outputPath + "Braki " + date + ".xlsx")){
-            workbook.setForceFormulaRecalculation(true);
-            workbook.write(fout);
-        } catch (IOException e) {
-            System.out.println("RuchyBrakow IO Blad: " + e.getMessage());
+        int count = 1;
+        List<XSSFWorkbook> workbooks = createShortagesLetterOutsiders();
+        for (XSSFWorkbook workbook : workbooks) {
+            try (FileOutputStream fout = new FileOutputStream(outputPath + "Braki_" + count + "_" + date + ".xlsx")) {
+                workbook.setForceFormulaRecalculation(true);
+                workbook.write(fout);
+                workbook.close();
+                count++;
+            } catch (IOException e) {
+                System.out.println("RuchyBrakow IO Blad: " + e.getMessage());
+            }
         }
     }
 
