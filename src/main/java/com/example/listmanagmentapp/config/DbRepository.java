@@ -76,7 +76,7 @@ public class DbRepository {
         }
     }
 
-    public void addRecordsFromPDF() throws IOException {
+    public void addRecordsFromPDF() {
         String query = "INSERT INTO DaneJson (nrZlecenia, json) VALUES (?, ?)";
         for  (Result[] results : zxingCodeReader.decodeImage()) {
             RecordsJson recordsJson = new RecordsJson('X', results[1].toString(), results[0].toString(), null, Integer.parseInt(results[2].toString()), 0, 0, false,

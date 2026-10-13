@@ -7,8 +7,10 @@ import com.google.zxing.common.HybridBinarizer;
 import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class ZXingCodeReader {
@@ -20,7 +22,7 @@ public class ZXingCodeReader {
         this.imagePreProcessing = imagePreProcessing;
     }
 
-    public List<Result[]> decodeImage() throws IOException {
+    public List<Result[]> decodeImage() {
         try {
             List<BufferedImage> bufferedImageList = imagePreProcessing.getBufferedImageList();
             List<Result[]> resultList = new ArrayList<>();
