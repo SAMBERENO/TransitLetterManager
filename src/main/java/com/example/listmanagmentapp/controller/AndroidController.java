@@ -80,11 +80,10 @@ public class AndroidController {
         }
     }
 
-    @PutMapping("/updateRecord")
-    public ResponseEntity<?> updateRecord(@RequestBody String json) {
+    @PutMapping("/updateRecords")
+    public ResponseEntity<?> updateRecords(@RequestBody String json) {
         try {
-            dbRepository.updateRecord(json);
-            dbRepository.deleteZatwierdzone();
+            dbRepository.updateRecords(json);
             return ResponseEntity.ok("Zaktualizowano pozycje");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Błąd: " + e.getMessage());

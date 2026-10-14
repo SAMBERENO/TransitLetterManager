@@ -1,16 +1,12 @@
 package com.example.listmanagmentapp.config;
 
 import com.example.listmanagmentapp.dto.*;
-import com.example.listmanagmentapp.service.ListsCreationOrganizerService;
-import com.example.listmanagmentapp.service.PDFHandler;
 import com.example.listmanagmentapp.service.ZXingCodeReader;
-import com.google.zxing.NotFoundException;
 import com.google.zxing.Result;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,11 +89,11 @@ public class DbRepository {
         jdbcTemplate.update(query, nrZleceniaiPudla.nrZleceniaiPudla(), json);
     }
 
-    public void updateRecord(String json) {
+    public void updateRecords(String json) {
         String query = "UPDATE DaneJson SET json = ?, zatwierdzone = 1 WHERE nrZlecenia = ?";
         RecordsJsonCollection recordsJsonCollection = objectMapper.readValue(json, RecordsJsonCollection.class);
-        for (RecordsJson recordsJson : recordsJsonCollection.recordsJsons()) {
-            jdbcTemplate.update(query, json, recordsJson.nrZleceniaiPudla());
+        for (RecordsJson recordsJson : recordsJsonCollection.records()) {
+            jdbcTemplate.update(query, objectMapper.writeValueAsString(recordsJson), recordsJson.nrZleceniaiPudla());
         }
     }
 
